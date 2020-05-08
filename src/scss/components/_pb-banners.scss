@@ -1,0 +1,98 @@
+////
+///	
+/// @group  Components (Banners)
+/// @author Rob Watson
+////
+
+.banner {
+
+	position: relative;
+	color: $White;
+	
+	&--75 {
+		height: 100vh;
+
+		@include md-up { height: 75vh; }
+
+	}
+
+	&--100 { height: 100vh; }
+
+}
+
+.banner .overlay {
+	position: absolute; 
+	display: flex;
+}
+
+.banner__header { text-transform: uppercase; }
+
+.banner__scroll {
+
+	position: absolute;
+	bottom: 20px;
+	left: 50%;
+	z-index: 2;
+	display: inline-block;
+	-webkit-transform: translate(0, -50%);
+	transform: translate(0, -50%);
+	letter-spacing: .1em;
+	text-decoration: none;
+	transition: opacity .3s;
+	padding-top: 80px; 
+
+	&:hover { opacity: .5; }
+
+	span {
+		position: absolute;
+		top: 40px;
+		left: 50%;
+		width: 24px;
+		height: 24px;
+		margin-left: -12px;
+		border-left: 2px solid $White;
+		border-bottom: 2px solid $White;
+		-webkit-transform: rotate(-45deg);
+		transform: rotate(-45deg);
+		-webkit-animation: sectionScroll 2s infinite;
+		animation: sectionScroll 2s infinite;
+		opacity: 0;
+		box-sizing: border-box;
+
+		&:nth-of-type(1) {
+			-webkit-animation-delay: 0s;
+			animation-delay: 0s;
+		}
+
+		&:nth-of-type(2) {
+			top: 60px;
+			-webkit-animation-delay: .15s;
+			animation-delay: .15s;
+		}
+
+		&:nth-of-type(3) {
+			top: 80px;
+			-webkit-animation-delay: .3s;
+			animation-delay: .3s;
+		}
+
+	}
+
+}
+
+@-webkit-keyframes sectionScroll {
+	
+	0% { opacity: 0; }
+  50% { opacity: 1; }
+	100% { opacity: 0; }
+	
+}
+@keyframes sectionScroll {
+	
+	0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+
+}
+
+

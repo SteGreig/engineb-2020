@@ -1,0 +1,1 @@
+<img loading="lazy" class="block" src="<?php echo $sectionImage['url'];?>" alt="">

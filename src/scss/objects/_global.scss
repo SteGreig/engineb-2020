@@ -1,0 +1,51 @@
+body {
+
+	font-family: 'Open Sans', sans-serif;
+}
+
+h1, h2, h3 { font-family: 'Roboto', sans-serif; }
+
+.container {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 35px;
+
+	@include lg-up {
+		max-width: 1000px;
+		margin: 0 auto;
+	}
+
+	@include xl-up {
+		max-width: 1200px;
+	}
+	
+}
+
+.overlay {
+
+	background: rgba($Black, .3);
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 35px;
+
+	@include md-up { padding: 70px; }
+
+	&--center {
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+	}
+
+	&--left {
+		align-items: center;
+		justify-content: flex-start;
+	}
+
+	&--right {
+		align-items: center;
+		justify-content: flex-end;
+	}
+
+}

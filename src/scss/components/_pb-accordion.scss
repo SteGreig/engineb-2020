@@ -1,0 +1,33 @@
+////
+///	
+/// @group Components (Accordion)
+/// @author Rob Watson
+////
+
+.accordion {
+	
+	//margin: 50px;
+	   
+	dt, dd {
+		 //padding: 10px;
+		 //border: 1px solid $Black;
+		 border-bottom: 0; 
+		 &:last-of-type {
+			 //border-bottom: 1px solid $Black; 
+		 }
+		 a {
+			 display: block;
+			 font-weight: bold;
+		 }
+	}
+ dd {
+		border-top: 0; 
+		&:last-of-type {
+			//border-top: 1px solid $White;
+			position: relative;
+			top: -1px;
+		}
+ }
+
+}
+

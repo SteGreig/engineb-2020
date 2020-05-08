@@ -1,0 +1,43 @@
+
+.grid {
+	
+	@include md-up { 
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	&--2 {
+		.block { width: 100%; }
+		@include md-up {
+			.block { width: 50%; }
+		}
+
+	}
+
+	&--3 {
+		
+		display: flex;
+		flex-wrap: wrap;
+
+		.block { width: 100%; }
+		
+		@include md-up {
+			.block { width: 33%; }
+		}
+		
+	}
+
+	&--4 {
+
+		display: flex;
+		flex-wrap: wrap;
+		
+		.block { width: 50%; }
+		
+		@include md-up {
+			.block { width: 25%; }
+		}
+		
+	}
+
+}

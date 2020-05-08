@@ -1,0 +1,109 @@
+////
+/// @group Tools (Mixins)
+/// @author Rob Watson
+////
+
+///
+/// Settings for each breakpoint, your site should be built mobile up
+/// @name Breakpoints
+/// @example $screen-xs-min: 425px;
+
+$screen-xs-min: 425px;
+$screen-sm-min: 576px;
+$screen-md-min: 768px;
+$screen-lg-min: 992px;
+$screen-xl-min: 1200px;
+
+/// Media query for a max size of $screen-sm-min set inside settings > breakpoints
+/// @example .foo { @include sm-up {...} }
+@mixin sm-up {
+  @media (min-width: #{$screen-sm-min}) {
+    @content;
+  }
+}
+
+/// Media query for a max size of $screen-md-min set inside settings > breakpoints
+/// @example .foo { @include md-up {...} }
+@mixin md-up {
+  @media (min-width: #{$screen-md-min}) {
+    @content;
+  }
+}
+
+/// Media query for a max size of $screen-lg-min set inside settings > breakpoints
+/// @example .foo { @include lg-up {...} }
+@mixin lg-up {
+  @media (min-width: #{$screen-lg-min}) {
+    @content;
+  }
+}
+
+/// Media query for a max size of $screen-xl-min set inside settings > breakpoints
+/// @example .foo { @include xl-up {...} }
+@mixin xl-up {
+  @media (min-width: #{$screen-xl-min}) {
+    @content;
+  }
+}
+
+
+/// It is unlikely that you'll ever use this as you should be building the site with a mobile up approach. Therefore phone portrait should be the default, with styles then overwritten down the cascade using the mixins below.
+///
+/// $screen-xs-min set inside settings > breakpoints
+/// @example .foo { @include xs-down; }
+@mixin xs-down {
+  @media (max-width: #{$screen-xs-min}) {
+    @content;
+  }
+}
+
+/// Media query for a max size of $screen-sm-max set inside settings > breakpoints
+/// @example .foo { @include sm-down {...} }
+@mixin sm-down {
+  @media (max-width: #{$screen-sm-max}) {
+    @content;
+  }
+}
+
+/// Media query for a max size of $screen-md-max set inside settings > breakpoints
+/// @example .foo { @include md-down {...} }
+@mixin md-down {
+  @media (max-width: #{$screen-md-max}) {
+    @content;
+  }
+}
+
+/// Media query for a max size of $screen-lg-max set inside settings > breakpoints
+/// @example .foo { @include lg-down {...} }
+@mixin lg-down {
+  @media (max-width: #{$screen-lg-max}) {
+    @content;
+  }
+}
+
+/// Media query for a max size of $screen-xl-max set inside settings > breakpoints
+/// @example .foo { @include xl-down {...} }
+@mixin xl-down {
+  @media (max-width: #{$screen-xl-max}) {
+    @content;
+  }
+}
+
+/// Adds a micro clearfix to an element
+/// @example .foo { @include cf; }
+@mixin cf {
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+/// Adds the font-size and line height
+/// @example .foo { @include font-size(16, 24); }
+@mixin font-size($sizeValue: 1.6, $line: $sizeValue * 1.5) {
+	font-size: ($sizeValue * 1) + px;
+	line-height: ($line * 1) + px;
+	font-size: ($sizeValue / 10) + rem;
+	line-height: ($line / 10) + rem;
+}
