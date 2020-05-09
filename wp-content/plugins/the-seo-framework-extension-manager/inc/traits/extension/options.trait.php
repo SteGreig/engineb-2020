@@ -231,75 +231,6 @@ trait Extension_Options {
 	protected $o_stale_defaults = [];
 
 	/**
-	 * Loops through multidimensional keys and values to find the corresponding one.
-	 *
-	 * Expected not to go beyond 10 key depth.
-	 * CAUTION: 2nd parameter is passed by reference and it will be annihilated.
-	 *
-	 * @since 1.3.0
-	 *
-	 * @param array|string $keys  The keys that collapse with $value. For performance
-	 *                            benefits, the last value should be a string.
-	 * @param array|string $value The values that might contain $keys' value.
-	 *                            Passed by reference for huge performance improvement.
-	 * @return mixed|null Null if not found. Value otherwise.
-	 */
-	final protected function get_mda_value( $keys, &$value ) {
-
-		//= Because it's cast to array, the return will always be inside this loop.
-		foreach ( (array) $keys as $k => $v ) {
-			if ( is_array( $v ) ) {
-				return isset( $value[ $k ] ) ? $this->get_mda_value( $v, $value[ $k ] ) : null;
-			} else {
-				if ( $k ) {
-					return isset( $value[ $k ][ $v ] ) ? $value[ $k ][ $v ] : null;
-				}
-
-				return isset( $value[ $v ] ) ? $value[ $v ] : null;
-			}
-		}
-	}
-
-	/**
-	 * Converts a single or sequential|associative array into a multidimensional array.
-	 *
-	 * SATOMA: "Single Array to Multidimensional Array"
-	 *
-	 * Example: '[ 0 => a, 1 => b, 3 => c ]';
-	 * Becomes: [ a => [ b => [ c ] ];
-	 *
-	 * This function can also be found in class \TSF_Extension_Manager\Core.
-	 *
-	 * @NOTE Do not pass multidimensional arrays, as they will cause PHP errors.
-	 *       Their values will be used as keys. Arrays can't be keys.
-	 *
-	 * @since 1.3.0
-	 * @staticvar array $_b Maintains iteration and depth.
-	 *
-	 * @param array $a The single dimensional array.
-	 * @return array Multidimensional array, where the values are the dimensional keys.
-	 */
-	final protected function satoma( array $a ) {
-
-		static $_b;
-
-		$_b = $a;
-
-		if ( $_b ) {
-			$last = array_shift( $a );
-
-			if ( $a ) {
-				$r = [];
-				$r[ $last ] = $this->satoma( $a );
-			} else {
-				$r = $last;
-			}
-		}
-
-		return $r;
-	}
-
-	/**
 	 * Returns current extension options array based upon $o_index;
 	 *
 	 * @since 1.0.0
@@ -324,7 +255,8 @@ trait Extension_Options {
 	 * Fetches current extension options.
 	 *
 	 * @since 1.0.0
-	 * @since 1.2.0 : Now listens to $this->o_defaults.
+	 * @since 1.2.0 Now listens to $this->o_defaults.
+	 * @since 2.3.0 Removed redundant option name check.
 	 *
 	 * @param string $option  The Option name.
 	 * @param mixed  $default The fallback value if the option doesn't exist. Defaults to $this->o_defaults[ $option ].
@@ -332,9 +264,9 @@ trait Extension_Options {
 	 */
 	final protected function get_option( $option, $default = null ) {
 
-		if ( ! $option )
-			return null;
-
+		// Should this be `array_merge( $this->o_defaults, $this->get_extension_options() )`?
+		// Performance hit! Since this method handles the caches...
+		// TODO see if we need to forward the defaults to the cache handler.
 		$options = $this->get_extension_options();
 
 		if ( isset( $options[ $option ] ) )
@@ -343,7 +275,7 @@ trait Extension_Options {
 		if ( isset( $default ) )
 			return $default;
 
-		if ( isset( $this->o_defaults[ $option ] ) )
+		if ( ! $options && isset( $this->o_defaults[ $option ] ) )
 			return $this->o_defaults[ $option ];
 
 		return null;
@@ -353,29 +285,33 @@ trait Extension_Options {
 	 * Fetches current extension options from multidimensional array.
 	 *
 	 * @since 1.3.0
+	 * @since 2.3.0 No longer uses the registered defaults when the options are already stored.
 	 *
-	 * @param array $key     The key that should collapse with the option.
+	 * @param array $keys    The keys that should collapse with the option.
 	 * @param mixed $default The fallback value if the option doesn't exist.
 	 *                       Defaults to the corrolated $this->o_defaults.
 	 * @return mixed The option value if exists. Otherwise $default.
 	 */
-	final protected function get_option_by_mda_key( array $key, $default = null ) {
+	final protected function get_option_by_mda_key( array $keys, $default = null ) {
 
 		//= If the array is sequential, convert it to a multidimensional array.
-		if ( array_values( $key ) === $key ) {
-			$key = $this->satoma( $key );
+		if ( array_values( $keys ) === $keys ) {
+			$keys = FormFieldParser::satoma( $keys );
 		}
 
-		$_     = $this->get_extension_options();
-		$value = $this->get_mda_value( $key, $_ ) ?: $default;
+		// Should this be `array_merge( $this->o_defaults, $this->get_extension_options() )`?
+		$options = $this->get_extension_options();
+		$value   = FormFieldParser::get_mda_value( $keys, $options ) ?: $default;
 
 		if ( isset( $value ) )
 			return $value;
 
-		if ( isset( $this->o_defaults ) ) {
-			$_ = $this->o_defaults;
-			return $this->get_mda_value( $key, $_ );
-		}
+		// Only fall back when no options are set.
+		// TODO this isn't in line with get_option()--The use case thereof is different.
+		// TODO BUGFIX ME?
+		// Also assess stale versions.
+		if ( ! $options && isset( $this->o_defaults ) )
+			return FormFieldParser::get_mda_value( $keys, $this->o_defaults );
 
 		return null;
 	}
@@ -384,6 +320,7 @@ trait Extension_Options {
 	 * Updates TSFEM Extensions option.
 	 *
 	 * @since 1.0.0
+	 * @since 2.3.0 Removed redundant option name check.
 	 *
 	 * @param string $option The option name.
 	 * @param mixed  $value  The option value.
@@ -391,7 +328,7 @@ trait Extension_Options {
 	 */
 	final protected function update_option( $option, $value ) {
 
-		if ( ! $option || ! $this->o_index )
+		if ( ! $this->o_index )
 			return false;
 
 		$options = $this->get_extension_options();
@@ -420,13 +357,14 @@ trait Extension_Options {
 	 * Deletes current extension option.
 	 *
 	 * @since 1.0.0
+	 * @since 2.3.0 Removed redundant option name check.
 	 *
 	 * @param string $option The Option name to delete.
 	 * @return boolean True on success; false on failure.
 	 */
 	final protected function delete_option( $option ) {
 
-		if ( ! $option || ! $this->o_index )
+		if ( ! $this->o_index )
 			return false;
 
 		$options = $this->get_extension_options();
@@ -511,6 +449,7 @@ trait Extension_Options {
 	 * Fetches current stale extension options.
 	 *
 	 * @since 1.3.0
+	 * @since 2.3.0 Removed redundant option name check.
 	 *
 	 * @param string $option  The Option name.
 	 * @param mixed  $default The fallback value if the option doesn't exist.
@@ -518,9 +457,6 @@ trait Extension_Options {
 	 * @return mixed The option value if exists. Otherwise $default.
 	 */
 	final protected function get_stale_option( $option, $default = null ) {
-
-		if ( ! $option )
-			return null;
 
 		$options = $this->get_stale_extension_options();
 
@@ -540,29 +476,28 @@ trait Extension_Options {
 	 * Fetches current stale extension options from multidimensional array.
 	 *
 	 * @since 1.3.0
+	 * @since 2.3.0 No longer uses the registered defaults when the options are already stored.
 	 *
-	 * @param array $key     The key that should collapse with the option.
+	 * @param array $keys    The keys that should collapse with the option.
 	 * @param mixed $default The fallback value if the option doesn't exist.
 	 *                       Defaults to the corrolated $this->o_stale_defaults.
 	 * @return mixed The option value if exists. Otherwise $default.
 	 */
-	final protected function get_stale_option_by_mda_key( array $key, $default = null ) {
+	final protected function get_stale_option_by_mda_key( array $keys, $default = null ) {
 
 		//= If the array is sequential, convert it to a multidimensional array.
-		if ( array_values( $key ) === $key ) {
-			$key = $this->satoma( $key );
+		if ( array_values( $keys ) === $keys ) {
+			$keys = FormFieldParser::satoma( $keys );
 		}
 
-		$_     = $this->get_stale_extension_options();
-		$value = $this->get_mda_value( $key, $_ ) ?: $default;
+		$options = $this->get_stale_extension_options();
+		$value   = FormFieldParser::get_mda_value( $keys, $options ) ?: $default;
 
 		if ( isset( $value ) )
 			return $value;
 
-		if ( isset( $this->o_stale_defaults ) ) {
-			$_ = $this->o_stale_defaults;
-			return $this->get_mda_value( $key, $_ );
-		}
+		if ( ! $options && isset( $this->o_stale_defaults ) )
+			return FormFieldParser::get_mda_value( $keys, $this->o_stale_defaults );
 
 		return null;
 	}
@@ -586,6 +521,7 @@ trait Extension_Options {
 	 * Updates TSFEM stale Extensions option.
 	 *
 	 * @since 1.3.0
+	 * @since 2.3.0 Removed redundant option name check.
 	 *
 	 * @param string $option The option name.
 	 * @param mixed  $value  The option value.
@@ -593,7 +529,7 @@ trait Extension_Options {
 	 */
 	final protected function update_stale_option( $option, $value ) {
 
-		if ( ! $option || ! $this->o_index )
+		if ( ! $this->o_index )
 			return false;
 
 		$options = $this->get_stale_extension_options();
@@ -622,13 +558,14 @@ trait Extension_Options {
 	 * Deletes current stale extension option.
 	 *
 	 * @since 1.3.0
+	 * @since 2.3.0 Removed redundant option name check.
 	 *
 	 * @param string $option The Option name to delete.
 	 * @return boolean True on success; false on failure.
 	 */
 	final protected function delete_stale_option( $option ) {
 
-		if ( ! $option || ! $this->o_index )
+		if ( ! $this->o_index )
 			return false;
 
 		$options = $this->get_stale_extension_options();

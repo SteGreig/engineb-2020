@@ -206,7 +206,7 @@ final class Admin extends Api {
 	public function _init_menu() {
 
 		if ( \tsf_extension_manager()->can_do_settings() && \the_seo_framework()->load_options )
-			\add_action( 'admin_menu', [ $this, '_add_menu_link' ], 11 );
+			\add_action( 'admin_menu', [ $this, '_add_menu_link' ], 100 );
 	}
 
 	/**
@@ -222,7 +222,7 @@ final class Admin extends Api {
 
 		$menu = [
 			'parent_slug' => \the_seo_framework()->seo_settings_page_slug,
-			'page_title'  => 'SEO Monitor',
+			'page_title'  => 'Monitor',
 			'menu_title'  => 'Monitor',
 			'capability'  => 'manage_options',
 			'menu_slug'   => $this->monitor_page_slug,
@@ -353,7 +353,7 @@ final class Admin extends Api {
 	 * @param bool $check_post Whether to check for POST variables containing TSFEM settings.
 	 * @return bool True if verified and matches. False if can't verify.
 	 */
-	final protected function handle_update_nonce( $key = 'default', $check_post = true ) {
+	protected function handle_update_nonce( $key = 'default', $check_post = true ) {
 
 		static $validated = [];
 
@@ -395,7 +395,7 @@ final class Admin extends Api {
 	 * @since 1.1.0
 	 * @access private
 	 */
-	final public function _wp_ajax_update_settings() {
+	public function _wp_ajax_update_settings() {
 
 		if ( \wp_doing_ajax() ) :
 			$tsfem = \tsf_extension_manager();
@@ -412,7 +412,7 @@ final class Admin extends Api {
 
 				if ( $option ) {
 					//= Unpack option.
-					$_option = $tsfem->get_last_value( $tsfem->umatosa( $option ) );
+					$_option = \TSF_Extension_Manager\FormFieldParser::get_last_value( \TSF_Extension_Manager\FormFieldParser::umatosa( $option ) );
 					$options = [
 						$_option => $value,
 					];
@@ -443,7 +443,7 @@ final class Admin extends Api {
 	 * @TODO update to newer ajax handler.
 	 * @access private
 	 */
-	final public function _wp_ajax_fetch_data() {
+	public function _wp_ajax_fetch_data() {
 
 		if ( \wp_doing_ajax() ) :
 			if ( \tsf_extension_manager()->can_do_settings() ) :
@@ -531,7 +531,7 @@ final class Admin extends Api {
 	 * @TODO update to newer ajax handler.
 	 * @access private
 	 */
-	final public function _wp_ajax_request_crawl() {
+	public function _wp_ajax_request_crawl() {
 
 		if ( \wp_doing_ajax() ) :
 			if ( \tsf_extension_manager()->can_do_settings() ) :
@@ -612,7 +612,7 @@ final class Admin extends Api {
 	 * @since 1.0.0
 	 * @access private
 	 */
-	final public function _wp_ajax_get_requires_fix() {
+	public function _wp_ajax_get_requires_fix() {
 
 		if ( \wp_doing_ajax() ) {
 			if ( \tsf_extension_manager()->can_do_settings() ) {
@@ -658,13 +658,13 @@ final class Admin extends Api {
 	 * @since 1.1.3
 	 * @access private
 	 * @internal
-	 * @staticvar bool $registered : Prevents Re-registering of the script.
 	 *
 	 * @param string $scripts The scripts builder class name.
 	 */
 	public function _register_monitor_scripts( $scripts ) {
-		static $registered = false;
-		if ( $registered ) return;
+
+		if ( \TSF_Extension_Manager\has_run( __METHOD__ ) ) return;
+
 		$scripts::register( [
 			[
 				'id'       => 'tsfem-monitor',
@@ -695,7 +695,6 @@ final class Admin extends Api {
 				],
 			],
 		] );
-		$registered = true;
 	}
 
 	/**
@@ -740,7 +739,7 @@ final class Admin extends Api {
 	 * @since 1.1.0
 	 * @access private
 	 */
-	final public function _output_monitor_header() {
+	public function _output_monitor_header() {
 		$this->get_view(
 			'layout/general/top',
 			[
@@ -755,7 +754,7 @@ final class Admin extends Api {
 	 * @since 1.1.0
 	 * @access private
 	 */
-	final public function _output_monitor_content() {
+	public function _output_monitor_content() {
 		if ( $this->is_api_connected() ) {
 			$this->get_view( 'layout/pages/monitor' );
 		} else {
@@ -769,7 +768,7 @@ final class Admin extends Api {
 	 * @since 1.1.0
 	 * @access private
 	 */
-	final public function _output_monitor_footer() {
+	public function _output_monitor_footer() {
 		$this->get_view( 'layout/general/footer' );
 	}
 
@@ -1006,11 +1005,11 @@ final class Admin extends Api {
 			$submit = $this->_get_submit_button(
 				\__( 'Update Settings', 'the-seo-framework-extension-manager' ),
 				'',
-				'tsfem-button-primary tsfem-button-flat tsfem-button-cloud'
+				'tsfem-button-primary tsfem-button-cloud'
 			);
 			$content .= sprintf(
 				'<form action=%s method=post id=%s class="%s">%s</form>',
-				\esc_url( \tsf_extension_manager()->get_admin_page_url( $this->monitor_page_slug ), [ 'http', 'https' ] ),
+				\esc_url( \tsf_extension_manager()->get_admin_page_url( $this->monitor_page_slug ), [ 'https', 'http' ] ),
 				$form_id,
 				'hide-if-js',
 				$nonce_action . $nonce . $submit
@@ -1030,7 +1029,7 @@ final class Admin extends Api {
 	 */
 	protected function get_fetch_button() {
 
-		$class          = 'tsfem-button-primary tsfem-button-green tsfem-button-flat tsfem-button-cloud';
+		$class          = 'tsfem-button-primary tsfem-button-primary-bright tsfem-button-cloud';
 		$name           = \__( 'Fetch Data', 'the-seo-framework-extension-manager' );
 		$title          = \__( 'Request Monitor to send you the latest data', 'the-seo-framework-extension-manager' );
 		$question_title = \__( 'Get the latest data of your website from Monitor.', 'the-seo-framework-extension-manager' );
@@ -1064,7 +1063,7 @@ final class Admin extends Api {
 	 */
 	protected function get_crawl_button() {
 
-		$class          = 'tsfem-button tsfem-button-flat tsfem-button-cloud';
+		$class          = 'tsfem-button-primary tsfem-button-cloud';
 		$name           = \__( 'Request Crawl', 'the-seo-framework-extension-manager' );
 		$title          = \__( 'Request Monitor to re-crawl this website', 'the-seo-framework-extension-manager' );
 		$question_title = \__( 'If your website has recently been updated, ask Monitor to re-crawl your site. This can take up to three minutes.', 'the-seo-framework-extension-manager' );
@@ -1115,7 +1114,7 @@ final class Admin extends Api {
 		$content = '';
 
 		domain : {
-			$domain  = str_ireplace( [ 'http://', 'https://' ], '', \esc_url( \get_home_url(), [ 'http', 'https' ] ) );
+			$domain  = str_ireplace( [ 'https://', 'http://' ], '', \esc_url( \get_home_url(), [ 'https', 'http' ] ) );
 			$_domain = $this->get_expected_domain();
 			$class   = $_domain === $domain ? 'tsfem-success' : 'tsfem-error';
 			$domain  = sprintf( '<span class="tsfem-dashicon %s">%s</span>', \esc_attr( $class ), \esc_html( $_domain ) );
@@ -1209,7 +1208,7 @@ final class Admin extends Api {
 	 */
 	protected function get_fix_button() {
 
-		$class = 'tsfem-button-primary tsfem-button-red tsfem-button-flat tsfem-button-cloud';
+		$class = 'tsfem-button tsfem-button-red tsfem-button-cloud';
 		$name = \__( 'Request Reactivation', 'the-seo-framework-extension-manager' );
 		$title = \__( 'Request Monitor to reconnect your website', 'the-seo-framework-extension-manager' );
 
@@ -1262,7 +1261,7 @@ final class Admin extends Api {
 							[
 								$s_field_id,
 								\esc_attr( $i18n['ays'] ),
-								'tsfem-switcher-button tsfem-button-primary tsfem-button-red tsfem-button-warning',
+								'tsfem-switcher-button tsfem-button tsfem-button-red tsfem-button-warning',
 								\esc_html( $i18n['disconnect'] ),
 							]
 						)
@@ -1270,7 +1269,7 @@ final class Admin extends Api {
 
 		$button = sprintf(
 			'<form name=deactivate action="%s" method=post id="tsfem-e-monitor-disconnect-form">%s</form>',
-			\esc_url( \tsf_extension_manager()->get_admin_page_url( $this->monitor_page_slug ), [ 'http', 'https' ] ),
+			\esc_url( \tsf_extension_manager()->get_admin_page_url( $this->monitor_page_slug ), [ 'https', 'http' ] ),
 			$nonce_action . $nonce . $switcher
 		);
 

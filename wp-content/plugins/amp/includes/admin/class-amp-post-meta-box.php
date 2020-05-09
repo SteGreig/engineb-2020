@@ -134,8 +134,7 @@ class AMP_Post_Meta_Box {
 			isset( $screen->base ) &&
 			'post' === $screen->base &&
 			( ! isset( $screen->is_block_editor ) || ! $screen->is_block_editor ) &&
-			is_post_type_viewable( $post->post_type ) &&
-			AMP_Story_Post_Type::POST_TYPE_SLUG !== $post->post_type
+			is_post_type_viewable( $post->post_type )
 		);
 
 		if ( ! $validate ) {
@@ -151,17 +150,17 @@ class AMP_Post_Meta_Box {
 
 		wp_styles()->add_data( self::ASSETS_HANDLE, 'rtl', 'replace' );
 
-		$script_deps_path    = AMP__DIR__ . '/assets/js/' . self::ASSETS_HANDLE . '.deps.json';
-		$script_dependencies = file_exists( $script_deps_path )
-			? json_decode( file_get_contents( $script_deps_path ), false ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			: [];
+		$asset_file   = AMP__DIR__ . '/assets/js/' . self::ASSETS_HANDLE . '.asset.php';
+		$asset        = require $asset_file;
+		$dependencies = $asset['dependencies'];
+		$version      = $asset['version'];
 
 		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NotInFooter
 		wp_enqueue_script(
 			self::ASSETS_HANDLE,
 			amp_get_asset_url( 'js/' . self::ASSETS_HANDLE . '.js' ),
-			$script_dependencies,
-			AMP__VERSION,
+			$dependencies,
+			$version,
 			false
 		);
 
@@ -199,7 +198,7 @@ class AMP_Post_Meta_Box {
 	 */
 	public function enqueue_block_assets() {
 		$post = get_post();
-		if ( ! is_post_type_viewable( $post->post_type ) || AMP_Story_Post_Type::POST_TYPE_SLUG === $post->post_type ) {
+		if ( ! is_post_type_viewable( $post->post_type ) ) {
 			return;
 		}
 
@@ -212,16 +211,16 @@ class AMP_Post_Meta_Box {
 
 		wp_styles()->add_data( self::BLOCK_ASSET_HANDLE, 'rtl', 'replace' );
 
-		$script_deps_path    = AMP__DIR__ . '/assets/js/' . self::BLOCK_ASSET_HANDLE . '.deps.json';
-		$script_dependencies = file_exists( $script_deps_path )
-			? json_decode( file_get_contents( $script_deps_path ), false ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			: [];
+		$asset_file   = AMP__DIR__ . '/assets/js/' . self::BLOCK_ASSET_HANDLE . '.asset.php';
+		$asset        = require $asset_file;
+		$dependencies = $asset['dependencies'];
+		$version      = $asset['version'];
 
 		wp_enqueue_script(
 			self::BLOCK_ASSET_HANDLE,
 			amp_get_asset_url( 'js/' . self::BLOCK_ASSET_HANDLE . '.js' ),
-			$script_dependencies,
-			AMP__VERSION,
+			$dependencies,
+			$version,
 			true
 		);
 
@@ -230,11 +229,10 @@ class AMP_Post_Meta_Box {
 		$error_messages    = $this->get_error_messages( $status_and_errors['status'], $status_and_errors['errors'] );
 
 		$data = [
+			'ampSlug'          => amp_get_slug(),
 			'possibleStatuses' => [ self::ENABLED_STATUS, self::DISABLED_STATUS ],
 			'defaultStatus'    => $enabled_status,
 			'errorMessages'    => $error_messages,
-			'isWebsiteEnabled' => AMP_Options_Manager::is_website_experience_enabled(),
-			'isStoriesEnabled' => AMP_Options_Manager::is_stories_experience_enabled(),
 			'hasThemeSupport'  => current_theme_supports( AMP_Theme_Support::SLUG ),
 			'isStandardMode'   => amp_is_canonical(),
 		];
@@ -424,5 +422,4 @@ class AMP_Post_Meta_Box {
 
 		return $link;
 	}
-
 }

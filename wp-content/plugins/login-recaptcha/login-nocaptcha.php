@@ -4,7 +4,7 @@ Plugin Name: Login No Captcha reCAPTCHA (Google)
 Plugin URI: https://wordpress.org/plugins/login-recaptcha/
 Description: Adds a Google CAPTCHA checkbox to the login, registration, and forgot password forms, thwarting automated hacking attempts
 Author: Robert Peake
-Version: 1.6.4
+Version: 1.6.8
 Author URI: https://github.com/cyberscribe/login-recaptcha
 Text Domain: login-recaptcha
 Domain Path: /languages/
@@ -155,7 +155,7 @@ add_action('woocommerce_register_form',array('LoginNocaptcha', 'nocaptcha_form')
     public static function register_scripts_css() {
         $api_url = 'https://www.google.com/recaptcha/api.js?onload=submitDisable';
         wp_register_script('login_nocaptcha_google_api', $api_url, array(), null );
-        wp_register_style('login_nocaptcha_css', plugin_dir_url( __FILE__ ) . 'css/style.css');
+        wp_register_style('login_nocaptcha_css', plugin_dir_url( __FILE__ ) . 'css/style.css', array( 'login' ), filemtime( __FILE__ ));
     }
 
     public static function enqueue_scripts_css() {
@@ -163,7 +163,7 @@ add_action('woocommerce_register_form',array('LoginNocaptcha', 'nocaptcha_form')
             LoginNocaptcha::register_scripts_css();
         }
         if ( (!empty($GLOBALS['pagenow']) && ($GLOBALS['pagenow'] == 'options-general.php' ||
-                $GLOBALS['pagenow'] == 'wp-login.php')) || 
+                $GLOBALS['pagenow'] == 'wp-login.php')) ||
                 (function_exists('is_account_page') && is_account_page()) ||
                 (function_exists('is_checkout') && is_checkout())
             ) {
@@ -199,7 +199,7 @@ add_action('woocommerce_register_form',array('LoginNocaptcha', 'nocaptcha_form')
             echo "                     button.removeAttribute('disabled');\n";
             echo "                 }\n";
             if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-                echo "                 var woo_buttons = ".json_encode(array('.woocommerce-form-login button','.woocommerce-form-register button','.woocommerce-ResetPassword button')).";\n"; 
+                echo "                 var woo_buttons = ".json_encode(array('.woocommerce-form-login button','.woocommerce-form-register button','.woocommerce-ResetPassword button')).";\n";
                 echo "                 if (typeof jQuery != 'undefined') {\n";
                 echo "                     jQuery.each(woo_buttons,function(i,btn) {\n";
                 echo "                         jQuery(btn).removeAttr('disabled');\n";
@@ -219,7 +219,7 @@ add_action('woocommerce_register_form',array('LoginNocaptcha', 'nocaptcha_form')
             echo "                     button.setAttribute('disabled','disabled');\n";
             echo "                 }\n";
             if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-                echo "                 var woo_buttons = ".json_encode(array('.woocommerce-form-login button','.woocommerce-form-register button','.woocommerce-ResetPassword button')).";\n"; 
+                echo "                 var woo_buttons = ".json_encode(array('.woocommerce-form-login button','.woocommerce-form-register button','.woocommerce-ResetPassword button')).";\n";
                 echo "                 if (typeof jQuery != 'undefined') {\n";
                 echo "                     jQuery.each(woo_buttons,function(i,btn) {\n";
                 echo "                        jQuery(btn).attr('disabled','disabled');\n";
@@ -344,19 +344,15 @@ add_action('woocommerce_register_form',array('LoginNocaptcha', 'nocaptcha_form')
             if (isset($_POST['action']) && $_POST['action'] === 'lostpassword') {
                 return new WP_Error('authentication_failed', __('<strong>ERROR</strong>&nbsp;: Please check the ReCaptcha box.','login-recaptcha'));
             }
-            if (is_wp_error($user_or_email)) {
-                $user_or_email->add('no_captcha', __('<strong>ERROR</strong>&nbsp;: Please check the ReCaptcha box.','login-recaptcha'));
-                return $user_or_email;
-            } else {
-                return new WP_Error('authentication_failed', __('<strong>ERROR</strong>&nbsp;: Please check the ReCaptcha box.','login-recaptcha'));
-            }
+            //If you don't have 'g-recaptcha-response', return only a generic captcha error, not info about about a correct/incorrect user/password.
+            return new WP_Error('authentication_failed', __('<strong>ERROR</strong>&nbsp;: Please check the ReCaptcha box.','login-recaptcha'));
         }
     }
 
     public static function admin_notices() {
         // not working, or notice fired in last 30 seconds
         $login_nocaptcha_error = get_option('login_nocaptcha_error');
-        $login_nocaptcha_working = get_option('login_nocaptcha_working'); 
+        $login_nocaptcha_working = get_option('login_nocaptcha_working');
         $login_nocaptcha_notice = get_option('login_nocaptcha_notice');
         $time = time();
         if(!empty($login_nocaptcha_error) && (empty($login_nocaptcha_working) || ($time - $login_nocaptcha_notice < 30))) {

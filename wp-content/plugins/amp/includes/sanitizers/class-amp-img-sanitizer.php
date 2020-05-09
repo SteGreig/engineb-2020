@@ -5,6 +5,8 @@
  * @package AMP
  */
 
+use AmpProject\DevMode;
+
 /**
  * Class AMP_Img_Sanitizer
  *
@@ -71,7 +73,7 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 	}
 
 	/**
-	 * Sanitize the <img> elements from the HTML contained in this instance's DOMDocument.
+	 * Sanitize the <img> elements from the HTML contained in this instance's Dom\Document.
 	 *
 	 * @since 0.2
 	 */
@@ -80,7 +82,7 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 		/**
 		 * Node list.
 		 *
-		 * @var DOMNodeList $node
+		 * @var DOMNodeList $nodes
 		 */
 		$nodes           = $this->dom->getElementsByTagName( self::$tag );
 		$need_dimensions = [];
@@ -97,7 +99,7 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 
 		for ( $i = $num_nodes - 1; $i >= 0; $i-- ) {
 			$node = $nodes->item( $i );
-			if ( ! $node instanceof DOMElement || $this->has_dev_mode_exemption( $node ) ) {
+			if ( ! $node instanceof DOMElement || DevMode::hasExemptionForNode( $node ) ) {
 				continue;
 			}
 
@@ -107,7 +109,14 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 			}
 
 			if ( ! $node->hasAttribute( 'src' ) || '' === trim( $node->getAttribute( 'src' ) ) ) {
-				$this->remove_invalid_child( $node );
+				$this->remove_invalid_child(
+					$node,
+					[
+						'code'       => AMP_Tag_And_Attribute_Sanitizer::ATTR_REQUIRED_BUT_MISSING,
+						'attributes' => [ 'src' ],
+						'spec_name'  => 'amp-img',
+					]
+				);
 				continue;
 			}
 
@@ -190,8 +199,19 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 
 				// Skip directly copying new web platform attributes from img to amp-img which are largely handled by AMP already.
 				case 'importance': // Not supported by AMP.
-				case 'loading': // Lazy-loading handled by amp-img natively.
 				case 'intrinsicsize': // Responsive images handled by amp-img directly.
+					break;
+
+				case 'loading': // Lazy-loading handled by amp-img natively.
+					if ( 'lazy' !== strtolower( $value ) ) {
+						$out[ $name ] = $value;
+					}
+					break;
+
+				case 'decoding': // Async decoding handled by AMP.
+					if ( 'async' !== strtolower( $value ) ) {
+						$out[ $name ] = $value;
+					}
 					break;
 
 				default:
@@ -298,7 +318,12 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 		$this->add_or_append_attribute( $new_attributes, 'class', 'amp-wp-enforced-sizes' );
 		if ( empty( $new_attributes['layout'] ) && ! empty( $new_attributes['height'] ) && ! empty( $new_attributes['width'] ) ) {
 			// Use responsive images when a theme supports wide and full-bleed images.
-			if ( ! empty( $this->args['align_wide_support'] ) && $node->parentNode && 'figure' === $node->parentNode->nodeName && preg_match( '/(^|\s)(alignwide|alignfull)(\s|$)/', $node->parentNode->getAttribute( 'class' ) ) ) {
+			if (
+				! empty( $this->args['align_wide_support'] )
+				&& $node->parentNode instanceof DOMElement
+				&& 'figure' === $node->parentNode->nodeName
+				&& preg_match( '/(^|\s)(alignwide|alignfull)(\s|$)/', $node->parentNode->getAttribute( 'class' ) )
+			) {
 				$new_attributes['layout'] = 'responsive';
 			} else {
 				$new_attributes['layout'] = 'intrinsic';
@@ -346,14 +371,7 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 			);
 		}
 
-		$can_include_noscript = (
-			$this->args['add_noscript_fallback']
-			&&
-			( $node->hasAttribute( 'src' ) && ! preg_match( '/^http:/', $node->getAttribute( 'src' ) ) )
-			&&
-			( ! $node->hasAttribute( 'srcset' ) || ! preg_match( '/http:/', $node->getAttribute( 'srcset' ) ) )
-		);
-		if ( $can_include_noscript ) {
+		if ( $this->args['add_noscript_fallback'] ) {
 			// Preserve original node in noscript for no-JS environments.
 			$this->append_old_node_noscript( $img_node, $node, $this->dom );
 		}
@@ -368,38 +386,71 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 	 */
 	private function maybe_add_lightbox_attributes( $attributes, $node ) {
 		$parent_node = $node->parentNode;
-		if ( ! ( $parent_node instanceof DOMElement ) || 'figure' !== $parent_node->tagName ) {
+		if ( ! ( $parent_node instanceof DOMElement ) || ! ( $parent_node->parentNode instanceof DOMElement ) ) {
 			return $attributes;
 		}
 
-		// Account for blocks that include alignment.
-		// In that case, the structure changes from figure.wp-block-image > img
+		$is_file_url                        = preg_match( '/\.\w+$/', wp_parse_url( $parent_node->getAttribute( 'href' ), PHP_URL_PATH ) );
+		$is_node_wrapped_in_media_file_link = (
+			'a' === $parent_node->tagName
+			&&
+			( 'figure' === $parent_node->tagName || 'figure' === $parent_node->parentNode->tagName )
+			&&
+			$is_file_url // This should be a link to the media file, not the attachment page.
+		);
+
+		if ( 'figure' !== $parent_node->tagName && ! $is_node_wrapped_in_media_file_link ) {
+			return $attributes;
+		}
+
+		// Account for blocks that include alignment or images that are wrapped in <a>.
+		// With alignment, the structure changes from figure.wp-block-image > img
 		// to div.wp-block-image > figure > img and the amp-lightbox attribute
 		// can be found on the wrapping div instead of the figure element.
 		$grand_parent = $parent_node->parentNode;
-		if ( $grand_parent instanceof DOMElement ) {
-			$classes = preg_split( '/\s+/', $grand_parent->getAttribute( 'class' ) );
-			if ( in_array( 'wp-block-image', $classes, true ) ) {
-				$parent_node = $grand_parent;
-			}
+		if ( $this->does_node_have_block_class( $grand_parent ) ) {
+			$parent_node = $grand_parent;
+		} elseif ( isset( $grand_parent->parentNode ) && $this->does_node_have_block_class( $grand_parent->parentNode ) ) {
+			$parent_node = $grand_parent->parentNode;
 		}
 
 		$parent_attributes = AMP_DOM_Utils::get_node_attributes_as_assoc_array( $parent_node );
 
 		if ( isset( $parent_attributes['data-amp-lightbox'] ) && true === filter_var( $parent_attributes['data-amp-lightbox'], FILTER_VALIDATE_BOOLEAN ) ) {
 			$attributes['data-amp-lightbox'] = '';
-			$attributes['on']                = 'tap:' . self::AMP_IMAGE_LIGHTBOX_ID;
-			$attributes['role']              = 'button';
-			$attributes['tabindex']          = 0;
+			$attributes['lightbox']          = '';
 
-			$this->maybe_add_amp_image_lightbox_node();
+			/*
+			 * Removes the <a> if the image is wrapped in one, as it can prevent the lightbox from working.
+			 * But this only removes the <a> if it links to the media file, not the attachment page.
+			 */
+			if ( $is_node_wrapped_in_media_file_link ) {
+				$node->parentNode->parentNode->replaceChild( $node, $node->parentNode );
+			}
 		}
 
 		return $attributes;
 	}
 
 	/**
-	 * Determines is a URL is considered a GIF URL
+	 * Gets whether a node has the class 'wp-block-image', meaning it is a wrapper for an Image block.
+	 *
+	 * @param DOMElement $node A node to evaluate.
+	 * @return bool Whether the node has the class 'wp-block-image'.
+	 */
+	private function does_node_have_block_class( $node ) {
+		if ( $node instanceof DOMElement ) {
+			$classes = preg_split( '/\s+/', $node->getAttribute( 'class' ) );
+			if ( in_array( 'wp-block-image', $classes, true ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines if a URL is considered a GIF URL
 	 *
 	 * @since 0.2
 	 *

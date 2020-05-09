@@ -5,6 +5,8 @@
  * @package AMP
  */
 
+use AmpProject\AmpWP\Option;
+
 /**
  * Class AMP_Options_Manager
  */
@@ -18,38 +20,17 @@ class AMP_Options_Manager {
 	const OPTION_NAME = 'amp-options';
 
 	/**
-	 * Slug for website experience.
-	 */
-	const WEBSITE_EXPERIENCE = 'website';
-
-	/**
-	 * Slug for stories experience.
-	 *
-	 * @var
-	 */
-	const STORIES_EXPERIENCE = 'stories';
-
-	/**
 	 * Default option values.
 	 *
 	 * @var array
 	 */
 	protected static $defaults = [
-		'experiences'              => [ self::WEBSITE_EXPERIENCE ],
-		'theme_support'            => AMP_Theme_Support::READER_MODE_SLUG,
-		'supported_post_types'     => [ 'post' ],
-		'analytics'                => [],
-		'auto_accept_sanitization' => true,
-		'all_templates_supported'  => true,
-		'supported_templates'      => [ 'is_singular' ],
-		'enable_response_caching'  => true,
-		'version'                  => AMP__VERSION,
-		'story_templates_version'  => false,
-		'story_export_base_url'    => '',
-		'story_settings'           => [
-			'auto_advance_after'          => '',
-			'auto_advance_after_duration' => 0,
-		],
+		'theme_support'           => AMP_Theme_Support::READER_MODE_SLUG,
+		'supported_post_types'    => [ 'post' ],
+		'analytics'               => [],
+		'all_templates_supported' => true,
+		'supported_templates'     => [ 'is_singular' ],
+		'version'                 => AMP__VERSION,
 	];
 
 	/**
@@ -67,14 +48,12 @@ class AMP_Options_Manager {
 
 		add_action( 'update_option_' . self::OPTION_NAME, [ __CLASS__, 'maybe_flush_rewrite_rules' ], 10, 2 );
 		add_action( 'admin_notices', [ __CLASS__, 'render_welcome_notice' ] );
-		add_action( 'admin_notices', [ __CLASS__, 'persistent_object_caching_notice' ] );
-		add_action( 'admin_notices', [ __CLASS__, 'render_cache_miss_notice' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'render_php_css_parser_conflict_notice' ] );
 		add_action( 'admin_notices', [ __CLASS__, 'insecure_connection_notice' ] );
 	}
 
 	/**
-	 * Flush rewrite rules if the supported_post_types or experiences have changed.
+	 * Flush rewrite rules if the supported_post_types have changed.
 	 *
 	 * @since 0.6.2
 	 *
@@ -86,28 +65,10 @@ class AMP_Options_Manager {
 		$new_post_types = isset( $new_options['supported_post_types'] ) ? $new_options['supported_post_types'] : [];
 		sort( $old_post_types );
 		sort( $new_post_types );
-		$old_experiences = isset( $old_options['experiences'] ) ? $old_options['experiences'] : [];
-		$new_experiences = isset( $new_options['experiences'] ) ? $new_options['experiences'] : [];
-		sort( $old_experiences );
-		sort( $new_experiences );
-		if ( $old_post_types !== $new_post_types || $old_experiences !== $new_experiences ) {
-
-			// Ensure story post type registration is up to date prior to flushing rewrite rules.
-			$story_post_type = get_post_type_object( AMP_Story_Post_Type::POST_TYPE_SLUG );
-			if ( self::is_stories_experience_enabled() && ! $story_post_type ) {
-				AMP_Story_Post_Type::register();
-			} elseif ( ! self::is_stories_experience_enabled() && $story_post_type ) {
-				$story_post_type->remove_rewrite_rules();
-				unregister_post_type( AMP_Story_Post_Type::POST_TYPE_SLUG );
-			}
-
-			// Flush rewrite rules, with ensuring up to date for website experience.
-			if ( self::is_website_experience_enabled() ) {
-				add_rewrite_endpoint( amp_get_slug(), EP_PERMALINK );
-				flush_rewrite_rules( false );
-			} else {
-				amp_deactivate(); // This will call flush_rewrite_rules( false ).
-			}
+		if ( $old_post_types !== $new_post_types ) {
+			// Flush rewrite rules.
+			add_rewrite_endpoint( amp_get_slug(), EP_PERMALINK );
+			flush_rewrite_rules( false );
 		}
 	}
 
@@ -124,19 +85,11 @@ class AMP_Options_Manager {
 
 		$defaults = self::$defaults;
 
-		$defaults['enable_response_caching'] = wp_using_ext_object_cache();
-
 		if ( current_theme_supports( 'amp' ) ) {
 			$defaults['theme_support'] = amp_is_canonical() ? AMP_Theme_Support::STANDARD_MODE_SLUG : AMP_Theme_Support::TRANSITIONAL_MODE_SLUG;
 		}
 
 		$options = array_merge( $defaults, $options );
-
-		// Migrate stories option from 1.2-beta.
-		if ( ! empty( $options['enable_amp_stories'] ) ) {
-			$options['experiences'][] = self::STORIES_EXPERIENCE;
-			unset( $options['enable_amp_stories'] );
-		}
 
 		// Migrate theme support slugs.
 		if ( 'native' === $options['theme_support'] ) {
@@ -157,6 +110,36 @@ class AMP_Options_Manager {
 			 */
 			$options['theme_support'] = $defaults['theme_support'];
 		}
+
+		unset(
+			/**
+			 * Remove 'auto_accept_sanitization' option.
+			 *
+			 * @since 1.4.0
+			 */
+			$options['auto_accept_sanitization'],
+			/**
+			 * Remove Story related options.
+			 *
+			 * @since 1.5.0
+			 */
+			$options['story_templates_version'],
+			$options['story_export_base_url'],
+			$options['story_settings'],
+			$options['enable_amp_stories'], // This was added in 1.2-beta and later migrated into the `experiences` option.
+			/**
+			 * Remove 'experiences' option.
+			 *
+			 * @since 1.5.0
+			 */
+			$options['experiences'],
+			/**
+			 * Remove 'enable_response_caching' option.
+			 *
+			 * @since 1.5.0
+			 */
+			$options['enable_response_caching']
+		);
 
 		return $options;
 	}
@@ -180,32 +163,6 @@ class AMP_Options_Manager {
 	}
 
 	/**
-	 * Determine whether website experience is enabled.
-	 *
-	 * @since 1.2
-	 *
-	 * @return bool Enabled.
-	 */
-	public static function is_website_experience_enabled() {
-		return in_array( self::WEBSITE_EXPERIENCE, self::get_option( 'experiences' ), true );
-	}
-
-	/**
-	 * Determine whether stories experience is enabled.
-	 *
-	 * @since 1.2
-	 *
-	 * @return bool Enabled.
-	 */
-	public static function is_stories_experience_enabled() {
-		return (
-			AMP_Story_Post_Type::has_required_block_capabilities()
-			&&
-			in_array( self::STORIES_EXPERIENCE, self::get_option( 'experiences' ), true )
-		);
-	}
-
-	/**
 	 * Validate options.
 	 *
 	 * @param array $new_options Plugin options.
@@ -216,24 +173,6 @@ class AMP_Options_Manager {
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return $options;
-		}
-
-		// Experiences.
-		if ( isset( $new_options['experiences'] ) && is_array( $new_options['experiences'] ) ) {
-
-			// Validate the selected experiences.
-			$options['experiences'] = array_intersect(
-				$new_options['experiences'],
-				[
-					self::WEBSITE_EXPERIENCE,
-					self::STORIES_EXPERIENCE,
-				]
-			);
-
-			// At least one experience must be selected.
-			if ( empty( $options['experiences'] ) ) {
-				$options['experiences'] = [ self::WEBSITE_EXPERIENCE ];
-			}
 		}
 
 		// Theme support.
@@ -251,18 +190,15 @@ class AMP_Options_Manager {
 			}
 		}
 
-		$options['auto_accept_sanitization'] = ! empty( $new_options['auto_accept_sanitization'] );
-
 		// Validate post type support.
-		if ( in_array( self::WEBSITE_EXPERIENCE, $options['experiences'], true ) || isset( $new_options['supported_post_types'] ) ) {
+		if ( isset( $new_options['supported_post_types'] ) ) {
 			$options['supported_post_types'] = [];
-			if ( isset( $new_options['supported_post_types'] ) ) {
-				foreach ( $new_options['supported_post_types'] as $post_type ) {
-					if ( ! post_type_exists( $post_type ) ) {
-						add_settings_error( self::OPTION_NAME, 'unknown_post_type', __( 'Unrecognized post type.', 'amp' ) );
-					} else {
-						$options['supported_post_types'][] = $post_type;
-					}
+
+			foreach ( $new_options['supported_post_types'] as $post_type ) {
+				if ( ! post_type_exists( $post_type ) ) {
+					add_settings_error( self::OPTION_NAME, 'unknown_post_type', __( 'Unrecognized post type.', 'amp' ) );
+				} else {
+					$options['supported_post_types'][] = $post_type;
 				}
 			}
 		}
@@ -328,30 +264,14 @@ class AMP_Options_Manager {
 			}
 		}
 
+		if ( array_key_exists( Option::DISABLE_CSS_TRANSIENT_CACHING, $new_options ) && true === $new_options[ Option::DISABLE_CSS_TRANSIENT_CACHING ] ) {
+			$options[ Option::DISABLE_CSS_TRANSIENT_CACHING ] = true;
+		} else {
+			unset( $options[ Option::DISABLE_CSS_TRANSIENT_CACHING ] );
+		}
+
 		// Store the current version with the options so we know the format.
 		$options['version'] = AMP__VERSION;
-
-		// Handle the caching option.
-		$options['enable_response_caching'] = (
-			wp_using_ext_object_cache()
-			&&
-			! empty( $new_options['enable_response_caching'] )
-		);
-		if ( $options['enable_response_caching'] ) {
-			AMP_Theme_Support::reset_cache_miss_url_option();
-		}
-
-		// Handle the base URL for exported stories.
-		$options['story_export_base_url'] = isset( $new_options['story_export_base_url'] ) ? esc_url_raw( $new_options['story_export_base_url'], [ 'https' ] ) : '';
-
-		// AMP stories settings definitions.
-		$definitions = AMP_Story_Post_Type::get_stories_settings_definitions();
-
-		// Handle the AMP stories settings sanitization.
-		foreach ( $definitions as $option_name => $definition ) {
-			$value = $new_options[ AMP_Story_Post_Type::STORY_SETTINGS_OPTION ][ $option_name ];
-			$options[ AMP_Story_Post_Type::STORY_SETTINGS_OPTION ][ $option_name ] = call_user_func( $definition['meta_args']['sanitize_callback'], $value );
-		}
 
 		return $options;
 	}
@@ -363,10 +283,6 @@ class AMP_Options_Manager {
 	 * @see add_settings_error()
 	 */
 	public static function check_supported_post_type_update_errors() {
-		if ( ! self::is_website_experience_enabled() ) {
-			return;
-		}
-
 		// If all templates are supported then skip check since all post types are also supported. This option only applies with standard/transitional theme support.
 		if ( self::get_option( 'all_templates_supported', false ) && AMP_Theme_Support::READER_MODE_SLUG !== self::get_option( 'theme_support' ) ) {
 			return;
@@ -398,9 +314,11 @@ class AMP_Options_Manager {
 				add_settings_error(
 					self::OPTION_NAME,
 					$code,
-					sprintf(
-						$error,
-						isset( $post_type->label ) ? $post_type->label : $post_type->name
+					esc_html(
+						sprintf(
+							$error,
+							isset( $post_type->label ) ? $post_type->label : $post_type->name
+						)
 					)
 				);
 			}
@@ -491,7 +409,7 @@ class AMP_Options_Manager {
 			<div class="amp-welcome-icon-holder">
 				<img width="200" height="200" class="amp-welcome-icon" src="<?php echo esc_url( amp_get_asset_url( 'images/amp-welcome-icon.svg' ) ); ?>" alt="<?php esc_attr_e( 'Illustration of WordPress running AMP plugin.', 'amp' ); ?>" />
 			</div>
-			<h1><?php esc_html_e( 'Welcome to AMP for WordPress', 'amp' ); ?></h1>
+			<h2><?php esc_html_e( 'Welcome to AMP for WordPress', 'amp' ); ?></h2>
 			<h3><?php esc_html_e( 'Bring the speed and features of the open source AMP project to your site, complete with the tools to support content authoring and website development.', 'amp' ); ?></h3>
 			<h3><?php esc_html_e( 'From granular controls that help you create AMP content, to Core Gutenberg support, to a sanitizer that only shows visitors error-free pages, to a full error workflow for developers, this release enables rich, performant experiences for your WordPress site.', 'amp' ); ?></h3>
 			<a href="https://amp-wp.org/getting-started/" target="_blank" class="button button-primary"><?php esc_html_e( 'Learn More', 'amp' ); ?></a>
@@ -540,48 +458,6 @@ class AMP_Options_Manager {
 	}
 
 	/**
-	 * Outputs an admin notice if persistent object cache is not present.
-	 *
-	 * @return void
-	 */
-	public static function persistent_object_caching_notice() {
-		if ( ! wp_using_ext_object_cache() && 'toplevel_page_' . self::OPTION_NAME === get_current_screen()->id ) {
-			printf(
-				'<div class="notice notice-warning"><p>%s</p></div>',
-				sprintf(
-					/* translators: %s: Persistent object cache support URL */
-					__( 'The AMP plugin performs at its best when persistent object cache is enabled. <a href="%s">More details</a>', 'amp' ), // phpcs:ignore WordPress.Security.EscapeOutput
-					esc_url( __( 'https://codex.wordpress.org/Class_Reference/WP_Object_Cache#Persistent_Caching', 'amp' ) )
-				)
-			);
-		}
-	}
-
-	/**
-	 * Render the cache miss admin notice.
-	 *
-	 * @return void
-	 */
-	public static function render_cache_miss_notice() {
-		if ( 'toplevel_page_' . self::OPTION_NAME !== get_current_screen()->id ) {
-			return;
-		}
-
-		if ( ! self::show_response_cache_disabled_notice() ) {
-			return;
-		}
-
-		printf(
-			'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
-			sprintf(
-				/* translators: %s: post-processor cache support URL */
-				__( 'The AMP plugin&lsquo;s post-processor cache was disabled due to the detection of highly-variable content. <a href="%s">More details</a>', 'amp' ), // phpcs:ignore WordPress.Security.EscapeOutput
-				esc_url( __( 'https://github.com/ampproject/amp-wp/wiki/Post-Processor-Cache', 'amp' ) )
-			)
-		);
-	}
-
-	/**
 	 * Render PHP-CSS-Parser conflict notice.
 	 *
 	 * @return void
@@ -605,10 +481,13 @@ class AMP_Options_Manager {
 
 			printf(
 				'<div class="notice notice-warning"><p>%s</p></div>',
-				sprintf(
-					/* translators: %s: path to the conflicting library */
-					__( 'A conflicting version of PHP-CSS-Parser appears to be installed by another plugin or theme (located in %s). Because of this, CSS processing will be limited, and tree shaking will not be available.', 'amp' ), // phpcs:ignore WordPress.Security.EscapeOutput
-					'<code>' . esc_html( $source_dir ) . '</code>'
+				wp_kses(
+					sprintf(
+						/* translators: %s: path to the conflicting library */
+						__( 'A conflicting version of PHP-CSS-Parser appears to be installed by another plugin or theme (located in %s). Because of this, CSS processing will be limited, and tree shaking will not be available.', 'amp' ),
+						'<code>' . esc_html( $source_dir ) . '</code>'
+					),
+					[ 'code' => [] ]
 				)
 			);
 		} catch ( ReflectionException $e ) {
@@ -618,24 +497,6 @@ class AMP_Options_Manager {
 			);
 		}
 	}
-
-	/**
-	 * Show the response cache disabled notice.
-	 *
-	 * @since 1.0
-	 *
-	 * @return bool
-	 */
-	public static function show_response_cache_disabled_notice() {
-		return (
-			wp_using_ext_object_cache()
-			&&
-			! self::get_option( 'enable_response_caching' )
-			&&
-			AMP_Theme_Support::exceeded_cache_miss_threshold()
-		);
-	}
-
 
 	/**
 	 * Outputs an admin notice if the site is not served over HTTPS.
@@ -705,23 +566,9 @@ class AMP_Options_Manager {
 			$validation = AMP_Validation_Manager::validate_url( $url );
 
 			if ( is_wp_error( $validation ) ) {
-				$review_messages[] = esc_html(
-					sprintf(
-						/* translators: 1: error message. 2: error code. */
-						__( 'However, there was an error when checking the AMP validity for your site.', 'amp' ),
-						$validation->get_error_message(),
-						$validation->get_error_code()
-					)
-				);
-
-				$error_message = $validation->get_error_message();
-				if ( $error_message ) {
-					$review_messages[] = $error_message;
-				} else {
-					/* translators: %s is the error code */
-					$review_messages[] = esc_html( sprintf( __( 'Error code: %s.', 'amp' ), $validation->get_error_code() ) );
-				}
-				$notice_type = 'error';
+				$review_messages[] = esc_html__( 'However, there was an error when checking the AMP validity for your site.', 'amp' );
+				$review_messages[] = AMP_Validation_Manager::get_validate_url_error_message( $validation->get_error_code(), $validation->get_error_message() );
+				$notice_type       = 'error';
 			} elseif ( is_array( $validation ) ) {
 				$new_errors      = 0;
 				$rejected_errors = 0;
@@ -738,13 +585,17 @@ class AMP_Options_Manager {
 					}
 				}
 
-				$invalid_url_post_id    = AMP_Validated_URL_Post_Type::store_validation_errors( $errors, $url );
+				$invalid_url_post_id    = AMP_Validated_URL_Post_Type::store_validation_errors(
+					$errors,
+					$url,
+					wp_array_slice_assoc( $validation, [ 'queried_object', 'stylesheets' ] )
+				);
 				$invalid_url_screen_url = ! is_wp_error( $invalid_url_post_id ) ? get_edit_post_link( $invalid_url_post_id, 'raw' ) : null;
 
 				if ( $rejected_errors > 0 ) {
 					$notice_type = 'error';
 
-					$message = wp_kses_post(
+					$message = esc_html(
 						sprintf(
 							/* translators: %s is count of rejected errors */
 							_n(
@@ -759,43 +610,37 @@ class AMP_Options_Manager {
 					);
 
 					if ( $invalid_url_screen_url ) {
-						$message .= ' ' . wp_kses_post(
-							sprintf(
-								/* translators: %s is URL to review issues */
-								_n(
-									'<a href="%s">Review Issue</a>.',
-									'<a href="%s">Review Issues</a>.',
-									$rejected_errors,
-									'amp'
-								),
-								esc_url( $invalid_url_screen_url )
-							)
+						$message .= ' ' . sprintf(
+							/* translators: %s is URL to review issues */
+							_n(
+								'<a href="%s">Review Issue</a>.',
+								'<a href="%s">Review Issues</a>.',
+								$rejected_errors,
+								'amp'
+							),
+							esc_url( $invalid_url_screen_url )
 						);
 					}
 
 					$review_messages[] = $message;
 				} else {
-					$message = wp_kses_post(
-						sprintf(
-							/* translators: %s is an AMP URL */
-							__( 'View an <a href="%s">AMP version of your site</a>.', 'amp' ),
-							esc_url( $url )
-						)
+					$message = sprintf(
+						/* translators: %s is an AMP URL */
+						__( 'View an <a href="%s">AMP version of your site</a>.', 'amp' ),
+						esc_url( $url )
 					);
 
 					if ( $new_errors > 0 && $invalid_url_screen_url ) {
-						$message .= ' ' . wp_kses_post(
-							sprintf(
-								/* translators: 1: URL to review issues. 2: count of new errors. */
-								_n(
-									'Please also <a href="%1$s">review %2$s issue</a> which may need to be fixed (for one URL at least).',
-									'Please also <a href="%1$s">review %2$s issues</a> which may need to be fixed (for one URL at least).',
-									$new_errors,
-									'amp'
-								),
-								esc_url( $invalid_url_screen_url ),
-								number_format_i18n( $new_errors )
-							)
+						$message .= ' ' . sprintf(
+							/* translators: 1: URL to review issues. 2: count of new errors. */
+							_n(
+								'Please also <a href="%1$s">review %2$s issue</a> which may need to be fixed (for one URL at least).',
+								'Please also <a href="%1$s">review %2$s issues</a> which may need to be fixed (for one URL at least).',
+								$new_errors,
+								'amp'
+							),
+							esc_url( $invalid_url_screen_url ),
+							number_format_i18n( $new_errors )
 						);
 					}
 
@@ -818,18 +663,16 @@ class AMP_Options_Manager {
 				}
 				break;
 			case AMP_Theme_Support::READER_MODE_SLUG:
-				$message = wp_kses_post(
-					sprintf(
-						/* translators: %s is an AMP URL */
-						__( 'Reader mode activated! View the <a href="%s">AMP version of a recent post</a>. It is recommended that you upgrade to Standard or Transitional mode.', 'amp' ),
-						esc_url( $url )
-					)
+				$message = sprintf(
+					/* translators: %s is an AMP URL */
+					__( 'Reader mode activated! View the <a href="%s">AMP version of a recent post</a>. It is recommended that you upgrade to Standard or Transitional mode.', 'amp' ),
+					esc_url( $url )
 				);
 				break;
 		}
 
 		if ( isset( $message ) ) {
-			add_settings_error( self::OPTION_NAME, 'template_mode_updated', $message, $notice_type );
+			add_settings_error( self::OPTION_NAME, 'template_mode_updated', wp_kses_post( $message ), $notice_type );
 		}
 	}
 }

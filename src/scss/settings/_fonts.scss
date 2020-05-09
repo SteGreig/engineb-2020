@@ -6,8 +6,27 @@
 ////
 
 /// This is the main body font used throughout the site
-/// @name Main Font
+/// @name Gilroy
 
 /// This is the main header font used throughout the site
-/// @name Header font
+/// @name Gilroy (700 weight)
 
+$primaryFont: "Gilroy";
+
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/wp-content/themes/engineb/assets/fonts/gilroy-extrabold-webfont.woff2') format('woff2'),
+       url('/wp-content/themes/engineb/assets/fonts/gilroy-extrabold-webfont.woff') format('woff');
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/wp-content/themes/engineb/assets/fonts/gilroy-light-webfont.woff2') format('woff2'),
+       url('/wp-content/themes/engineb/assets/fonts/gilroy-light-webfont.woff') format('woff');
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}

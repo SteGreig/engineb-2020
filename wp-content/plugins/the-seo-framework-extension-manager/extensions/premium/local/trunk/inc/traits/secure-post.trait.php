@@ -2,6 +2,7 @@
 /**
  * @package TSF_Extension_Manager\Extension\Local\Traits
  */
+
 namespace TSF_Extension_Manager\Extension\Local;
 
 defined( 'ABSPATH' ) or die;
@@ -101,6 +102,7 @@ trait Secure_Post {
 
 		/**
 		 * Registers and checks form AJAX iteration callback listeners.
+		 *
 		 * @see class TSF_Extension_Manager\FormGenerator
 		 *
 		 * Action is called in TSF_Extension_Manager\LoadAdmin::_wp_ajax_tsfemForm_iterate().
@@ -111,6 +113,7 @@ trait Secure_Post {
 
 		/**
 		 * Listens to AJAX form save.
+		 *
 		 * @see class TSF_Extension_Manager\FormGenerator
 		 *
 		 * Action is called in TSF_Extension_Manager\LoadAdmin::_wp_ajax_tsfemForm_save().
@@ -138,24 +141,24 @@ trait Secure_Post {
 	 */
 	public function _do_ajax_form_save() {
 
-		$post_data = isset( $_POST['data'] ) ? $_POST['data'] : ''; // CSRF, sanitization, input var ok.
-
+		// phpcs:ignore, WordPress.Security.NonceVerification -- Already done at _wp_ajax_tsfemForm_save()
+		$post_data = isset( $_POST['data'] ) ? $_POST['data'] : '';
 		parse_str( $post_data, $data );
 
 		$send = [];
+
+		// Nothing to see here.
+		if ( ! isset( $data[ TSF_EXTENSION_MANAGER_EXTENSION_OPTIONS ][ $this->o_index ] ) )
+			return;
 
 		/**
 		 * If this page doesn't parse the site options,
 		 * there's no need to check them on each request.
 		 */
-		if ( empty( $data )
-		|| ( ! isset( $data[ TSF_EXTENSION_MANAGER_EXTENSION_OPTIONS ][ $this->o_index ] ) )
-		|| ( ! is_array( $data[ TSF_EXTENSION_MANAGER_EXTENSION_OPTIONS ][ $this->o_index ] ) )
-		) {
+		if ( ! is_array( $data[ TSF_EXTENSION_MANAGER_EXTENSION_OPTIONS ][ $this->o_index ] ) ) {
 			$type            = 'failure';
 			$send['results'] = $this->get_ajax_notice( false, 1070100 );
 		} else {
-
 			$options = \wp_unslash( $data[ TSF_EXTENSION_MANAGER_EXTENSION_OPTIONS ][ $this->o_index ] );
 			$success = $this->update_stale_options_array_by_key( $options );
 			$this->process_all_stored_data();

@@ -129,7 +129,7 @@ final class InpostGUI {
 
 		//= Saving.
 		\add_action( 'the_seo_framework_pre_page_inpost_box', [ $this, '_output_nonce' ], 9 );
-		\add_action( 'save_post', static::class . '::_verify_nonce', 1, 2 );
+		\add_action( 'save_post', [ static::class, '_verify_nonce' ], 1, 2 );
 
 		//= Output.
 		\add_filter( 'the_seo_framework_inpost_settings_tabs', [ $this, '_load_tabs' ], 10, 2 );
@@ -464,7 +464,7 @@ final class InpostGUI {
 	 *
 	 * @since 1.5.0
 	 *
-	 * @param int|null $post_id
+	 * @param int|null $post_id The post ID to test.
 	 * @return bool True if user has acces. False otherwise.
 	 */
 	public static function current_user_can_edit_post( $post_id = null ) {
@@ -628,6 +628,7 @@ final class InpostGUI {
 	 * @param array  $args The registered view arguments.
 	 */
 	private function output_view( $file, array $args ) {
+
 		foreach ( $args as $_key => $_val )
 			$$_key = $_val;
 

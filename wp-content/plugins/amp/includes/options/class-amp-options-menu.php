@@ -80,35 +80,13 @@ class AMP_Options_Menu {
 		);
 
 		add_settings_field(
-			'experiences',
-			__( 'Experiences', 'amp' ),
-			[ $this, 'render_experiences' ],
-			AMP_Options_Manager::OPTION_NAME,
-			'general',
-			[
-				'class' => 'experiences',
-			]
-		);
-
-		add_settings_field(
 			'theme_support',
-			__( 'Website Mode', 'amp' ),
+			__( 'Template Mode', 'amp' ),
 			[ $this, 'render_theme_support' ],
 			AMP_Options_Manager::OPTION_NAME,
 			'general',
 			[
 				'class' => 'amp-website-mode',
-			]
-		);
-
-		add_settings_field(
-			'validation',
-			__( 'Validation Handling', 'amp' ),
-			[ $this, 'render_validation_handling' ],
-			AMP_Options_Manager::OPTION_NAME,
-			'general',
-			[
-				'class' => 'amp-validation-field',
 			]
 		);
 
@@ -123,60 +101,6 @@ class AMP_Options_Menu {
 			]
 		);
 
-		add_settings_field(
-			'stories_export',
-			__( 'Stories Export', 'amp' ),
-			[ $this, 'render_stories_export' ],
-			AMP_Options_Manager::OPTION_NAME,
-			'general',
-			[
-				'class' => 'amp-stories-export-field',
-			]
-		);
-
-		add_settings_field(
-			'stories_settings',
-			__( 'Stories Settings', 'amp' ),
-			[ $this, 'render_stories_settings' ],
-			AMP_Options_Manager::OPTION_NAME,
-			'general',
-			[
-				'class' => 'amp-stories-settings-field',
-			]
-		);
-
-		add_action(
-			'admin_print_styles',
-			function() {
-				?>
-				<style>
-					body:not(.amp-experience-website) .amp-website-mode,
-					body:not(.amp-experience-website) .amp-template-support-field,
-					body:not(.amp-experience-website) .amp-validation-field {
-						display: none;
-					}
-					body:not(.amp-experience-stories) .amp-stories-export-field,
-					body:not(.amp-experience-stories) .amp-stories-settings-field {
-						display: none;
-					}
-				</style>
-				<?php
-			}
-		);
-
-		if ( wp_using_ext_object_cache() ) {
-			add_settings_field(
-				'caching',
-				__( 'Caching', 'amp' ),
-				[ $this, 'render_caching' ],
-				AMP_Options_Manager::OPTION_NAME,
-				'general',
-				[
-					'class' => 'amp-caching-field',
-				]
-			);
-		}
-
 		$submenus = [
 			new AMP_Analytics_Options_Submenu( AMP_Options_Manager::OPTION_NAME ),
 		];
@@ -185,119 +109,6 @@ class AMP_Options_Menu {
 		foreach ( $submenus as $submenu ) {
 			$submenu->init();
 		}
-	}
-
-	/**
-	 * Render experiences.
-	 *
-	 * @since 1.2
-	 */
-	public function render_experiences() {
-		$experiences = AMP_Options_Manager::get_option( 'experiences' );
-
-		$has_required_block_capabilities = AMP_Story_Post_Type::has_required_block_capabilities();
-		?>
-		<style>
-			label[for="stories_experience"] span {
-				text-transform: uppercase;
-				font-size: 0.7em;
-				border: 1px solid;
-				border-radius: 2px;
-				padding: 2px;
-				margin: -15px 0  0 3px;
-				position: relative;
-				top: -2px;
-				font-weight: 400;
-				line-height: 1;
-			}
-		</style>
-		<fieldset>
-			<dl>
-				<dt>
-					<input type="checkbox" name="<?php echo esc_attr( AMP_Options_Manager::OPTION_NAME . '[experiences][]' ); ?>" id="website_experience" value="<?php echo esc_attr( AMP_Options_Manager::WEBSITE_EXPERIENCE ); ?>" <?php checked( in_array( AMP_Options_Manager::WEBSITE_EXPERIENCE, $experiences, true ) ); ?>>
-					<label for="website_experience">
-						<strong><?php esc_html_e( 'Website', 'amp' ); ?></strong>
-					</label>
-				</dt>
-				<dd>
-					<?php
-					echo wp_kses_post(
-						sprintf(
-							/* translators: %s: Stories documentation URL. */
-							__( 'AMP is a powerful web components framework that helps you build fast, user-first websites that monetize well. AMP puts tons of advanced capabilities at your fingertips, effectively reducing the operating and development costs of your sites. Read more about <a href="%s" target="_blank">AMP Websites</a>.', 'amp' ),
-							esc_url( 'https://amp.dev/about/websites' )
-						)
-					);
-					?>
-				</dd>
-				<dt>
-					<input type="checkbox" name="<?php echo esc_attr( AMP_Options_Manager::OPTION_NAME . '[experiences][]' ); ?>" id="stories_experience" value="<?php echo esc_attr( AMP_Options_Manager::STORIES_EXPERIENCE ); ?>" <?php disabled( ! $has_required_block_capabilities ); ?> <?php checked( in_array( AMP_Options_Manager::STORIES_EXPERIENCE, $experiences, true ) ); ?>>
-					<label for="stories_experience">
-						<strong><?php echo wp_kses_post( __( 'Stories <span>Beta</span>', 'amp' ) ); ?></strong>
-					</label>
-				</dt>
-				<dd>
-					<?php if ( ! $has_required_block_capabilities ) : ?>
-						<div class="notice notice-info notice-alt inline">
-							<p>
-								<?php
-								$gutenberg = 'Gutenberg';
-								// Link to Gutenberg plugin installation if eligible.
-								if ( current_user_can( 'install_plugins' ) ) {
-									$gutenberg = '<a href="' . esc_url( add_query_arg( 'tab', 'beta', admin_url( 'plugin-install.php' ) ) ) . '">' . $gutenberg . '</a>';
-								}
-								printf(
-									/* translators: %s: Gutenberg plugin name */
-									esc_html__( 'To use stories, you currently must have the latest version of the %s plugin installed and activated.', 'amp' ),
-									$gutenberg // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								);
-								?>
-							</p>
-						</div>
-					<?php endif; ?>
-					<?php
-					echo wp_kses_post(
-						sprintf(
-							/* translators: %s: Stories documentation URL. */
-							__( 'Stories is a visual storytelling format for the open web which immerses your readers in fast-loading, full-screen, and visually rich experiences. Stories can be a great addition to your overall content strategy. Read more about <a href="%s" target="_blank">AMP Stories</a>.', 'amp' ),
-							esc_url( 'https://amp.dev/about/stories' )
-						)
-					);
-					?>
-				</dd>
-			</dl>
-			<script>
-				/*
-				 * Toggle visibility of setting sections based on whether or not their respective experiences are enabled.
-				 * Ensure that at least one experience is selected, either Website, Stories, or both.
-				 */
-				( function( $, optionInputName, mustSelectMessage ) {
-					const websiteExperienceInput = $( '#website_experience' )[0];
-					const checkboxInputs = $( 'input[name="' + optionInputName + '"]' );
-
-					const handleExperiencesUpdate = () => {
-						const checkedCount = checkboxInputs.filter( ':checked' ).length;
-						if ( 0 === checkedCount ) {
-							websiteExperienceInput.setCustomValidity( mustSelectMessage );
-						} else {
-							websiteExperienceInput.setCustomValidity( '' );
-						}
-
-						checkboxInputs.each( function() {
-							document.body.classList.toggle( 'amp-experience-' + this.value, this.checked );
-						} );
-					};
-
-					checkboxInputs.on( 'change', handleExperiencesUpdate );
-					handleExperiencesUpdate();
-				})(
-					jQuery,
-					<?php echo wp_json_encode( AMP_Options_Manager::OPTION_NAME . '[experiences][]' ); ?>,
-					<?php echo wp_json_encode( __( 'You must select at least one experience.', 'amp' ) ); ?>
-				);
-			</script>
-		</fieldset>
-		<?php
 	}
 
 	/**
@@ -416,95 +227,6 @@ class AMP_Options_Menu {
 	}
 
 	/**
-	 * Post types support section renderer.
-	 *
-	 * @todo If dirty AMP is ever allowed (that is, post-processed documents which can be served with non-sanitized valdation errors), then automatically forcing sanitization in standard mode should be able to be turned off.
-	 *
-	 * @since 1.0
-	 */
-	public function render_validation_handling() {
-		?>
-		<fieldset>
-			<?php
-			$auto_sanitization = AMP_Validation_Error_Taxonomy::get_validation_error_sanitization(
-				[
-					'code' => 'non_existent',
-				]
-			);
-
-			$forced_sanitization = 'with_filter' === $auto_sanitization['forced'];
-			?>
-
-			<?php if ( $forced_sanitization ) : ?>
-				<div class="notice notice-info notice-alt inline">
-					<p><?php esc_html_e( 'Your install is configured via a theme or plugin to automatically sanitize any AMP validation error that is encountered.', 'amp' ); ?></p>
-				</div>
-				<input type="hidden" name="<?php echo esc_attr( AMP_Options_Manager::OPTION_NAME . '[auto_accept_sanitization]' ); ?>" value="<?php echo AMP_Options_Manager::get_option( 'auto_accept_sanitization' ) ? 'on' : ''; ?>">
-			<?php else : ?>
-				<div class="amp-auto-accept-sanitize-canonical notice notice-info notice-alt inline">
-					<p><?php esc_html_e( 'All new validation errors are automatically accepted when in standard mode.', 'amp' ); ?></p>
-				</div>
-				<div class="amp-auto-accept-sanitize">
-					<p>
-						<label for="auto_accept_sanitization">
-							<input id="auto_accept_sanitization" type="checkbox" name="<?php echo esc_attr( AMP_Options_Manager::OPTION_NAME . '[auto_accept_sanitization]' ); ?>" <?php checked( AMP_Options_Manager::get_option( 'auto_accept_sanitization' ) ); ?>>
-							<?php esc_html_e( 'Automatically accept sanitization for any newly encountered AMP validation errors.', 'amp' ); ?>
-						</label>
-					</p>
-					<p class="description">
-						<?php esc_html_e( 'This will ensure your responses are always valid AMP but some important content may get stripped out (e.g. scripts).', 'amp' ); ?>
-						<?php
-						echo wp_kses_post(
-							sprintf(
-								/* translators: %s is URL to validation errors screen */
-								__( 'Existing validation errors which you have already rejected will not be modified (you may want to consider <a href="%s">bulk-accepting them</a>).', 'amp' ),
-								esc_url(
-									add_query_arg(
-										[
-											'taxonomy'  => AMP_Validation_Error_Taxonomy::TAXONOMY_SLUG,
-											'post_type' => AMP_Validated_URL_Post_Type::POST_TYPE_SLUG,
-										],
-										admin_url( 'edit-tags.php' )
-									)
-								)
-							)
-						)
-						?>
-					</p>
-				</div>
-			<?php endif; ?>
-
-			<script>
-			(function( $, standardModeSlug, readerModeSlug ) {
-				const getThemeSupportMode = () => {
-					const checkedInput = $( 'input[type=radio][name="amp-options[theme_support]"]:checked' );
-					if ( 0 === checkedInput.length ) {
-						return standardModeSlug;
-					}
-					return checkedInput.val();
-				};
-
-				const updateHiddenClasses = function() {
-					const themeSupportMode = getThemeSupportMode();
-					$( '.amp-auto-accept-sanitize' ).toggleClass( 'hidden', standardModeSlug === themeSupportMode );
-					$( '.amp-validation-field' ).toggleClass( 'hidden', readerModeSlug === themeSupportMode );
-					$( '.amp-auto-accept-sanitize-canonical' ).toggleClass( 'hidden', standardModeSlug !== themeSupportMode );
-				};
-
-				$( 'input[type=radio][name="amp-options[theme_support]"]' ).change( updateHiddenClasses );
-
-				updateHiddenClasses();
-			})(
-				jQuery,
-				<?php echo wp_json_encode( AMP_Theme_Support::STANDARD_MODE_SLUG ); ?>,
-				<?php echo wp_json_encode( AMP_Theme_Support::READER_MODE_SLUG ); ?>
-			);
-			</script>
-		</fieldset>
-		<?php
-	}
-
-	/**
 	 * Supported templates section renderer.
 	 *
 	 * @since 1.0
@@ -562,7 +284,7 @@ class AMP_Options_Menu {
 				$checked = (
 					post_type_supports( $post_type->name, AMP_Post_Type_Support::SLUG )
 					||
-					( ! AMP_Options_Manager::is_website_experience_enabled() && in_array( $post_type->name, $supported_post_types, true ) )
+					in_array( $post_type->name, $supported_post_types, true )
 				);
 				?>
 				<li>
@@ -636,132 +358,6 @@ class AMP_Options_Menu {
 				})( jQuery );
 			</script>
 		<?php endif; ?>
-		<?php
-	}
-
-	/**
-	 * Render the caching settings section.
-	 *
-	 * @since 1.0
-	 *
-	 * @todo Change the messaging and description to be user-friendly and helpful.
-	 */
-	public function render_caching() {
-		?>
-		<fieldset>
-			<?php if ( AMP_Options_Manager::show_response_cache_disabled_notice() ) : ?>
-				<div class="notice notice-info notice-alt inline">
-					<p><?php esc_html_e( 'The post-processor cache was disabled due to detecting randomly generated content found on', 'amp' ); ?> <a href="<?php echo esc_url( get_option( AMP_Theme_Support::CACHE_MISS_URL_OPTION, '' ) ); ?>"><?php esc_html_e( 'on this web page.', 'amp' ); ?></a></p>
-					<p><?php esc_html_e( 'Randomly generated content was detected on this web page.  To avoid filling up the cache with unusable content, the AMP plugin\'s post-processor cache was automatically disabled.', 'amp' ); ?>
-						<a href="<?php echo esc_url( 'https://github.com/ampproject/amp-wp/wiki/Post-Processor-Cache' ); ?>"><?php esc_html_e( 'Read more', 'amp' ); ?></a>.</p>
-				</div>
-			<?php endif; ?>
-			<p>
-				<label for="enable_response_caching">
-					<input id="enable_response_caching" type="checkbox" name="<?php echo esc_attr( AMP_Options_Manager::OPTION_NAME . '[enable_response_caching]' ); ?>" <?php checked( AMP_Options_Manager::get_option( 'enable_response_caching' ) ); ?>>
-					<?php esc_html_e( 'Enable post-processor caching.', 'amp' ); ?>
-				</label>
-			</p>
-			<p class="description"><?php esc_html_e( 'This will enable post-processor caching to speed up processing an AMP response after WordPress renders a template.', 'amp' ); ?></p>
-		</fieldset>
-		<?php
-	}
-
-	/**
-	 * Render the stories export settings section.
-	 *
-	 * @since 1.2
-	 */
-	public function render_stories_export() {
-		?>
-		<fieldset <?php disabled( ! current_user_can( 'publish_posts' ) ); ?>>
-			<p>
-				<label for="story_export_base_url">
-					<strong><?php echo esc_html__( 'Base URL for exported stories.', 'amp' ); ?></strong>
-				</label>
-				<br />
-				<input id="story_export_base_url" type="text" placeholder="https://" class="regular-text code" name="<?php echo esc_attr( AMP_Options_Manager::OPTION_NAME . '[story_export_base_url]' ); ?>" value="<?php echo esc_url( AMP_Options_Manager::get_option( 'story_export_base_url' ) ); ?>" />
-			</p>
-			<p class="description"><?php esc_html_e( 'AMP requires most asset URLs to be absolute as opposed to relative. In order to export stories with the desired absolute URLs, you can provide the required URL base here. This base URL will be used for the uploaded files, as well as, links to other stories. If left empty, the default URLs will be used. Meaning, uploaded images and videos will be referenced from the WordPress install. Remember that the provided URL should be HTTPS.', 'amp' ); ?></p>
-		</fieldset>
-		<?php
-	}
-
-	/**
-	 * Render the stories settings section.
-	 *
-	 * @since 1.3
-	 */
-	public function render_stories_settings() {
-		?>
-		<p><?php esc_html_e( 'These settings are applied to new stories only.', 'amp' ); ?></p>
-		<?php
-		$this->render_stories_settings_page_advance();
-	}
-
-	/**
-	 * Render the page advancement settings section.
-	 *
-	 * @since 1.3
-	 */
-	private function render_stories_settings_page_advance() {
-		$definitions                = AMP_Story_Post_Type::get_stories_settings_definitions();
-		$auto_advance_after_options = $definitions['auto_advance_after']['data']['options'];
-
-		$story_settings            = AMP_Options_Manager::get_option( 'story_settings' );
-		$story_settings_field_name = sprintf( '%s[%s]', AMP_Options_Manager::OPTION_NAME, AMP_Story_Post_Type::STORY_SETTINGS_OPTION );
-		?>
-		<fieldset>
-			<p>
-				<label for="stories_settings_auto_advance_after">
-					<strong><?php echo esc_html__( 'Advance to next page', 'amp' ); ?></strong>
-				</label>
-				<br />
-				<select id="stories_settings_auto_advance_after" name="<?php echo esc_attr( $story_settings_field_name . '[auto_advance_after]' ); ?>">
-				<?php foreach ( $auto_advance_after_options as $option ) : ?>
-					<option
-						value="<?php echo esc_attr( $option['value'] ); ?>"
-						data-description="<?php echo esc_attr( $option['description'] ); ?>"
-						<?php selected( $story_settings['auto_advance_after'], $option['value'] ); ?>
-					>
-						<?php echo esc_html( $option['label'] ); ?>
-					</option>
-				<?php endforeach; ?>
-				</select>
-			</p>
-			<p class="hidden">
-				<label for="stories_settings_auto_advance_after_duration">
-					<strong><?php echo esc_html__( 'Time in seconds', 'amp' ); ?></strong>
-				</label>
-				<br />
-				<input
-					type="number"
-					class="small-text"
-					id="stories_settings_auto_advance_after_duration"
-					min="0"
-					max="100"
-					name="<?php echo esc_attr( $story_settings_field_name . '[auto_advance_after_duration]' ); ?>"
-					value="<?php echo (int) $story_settings['auto_advance_after_duration']; ?>"
-				>
-			</p>
-			<p class="description"></p>
-		</fieldset>
-		<script>
-			(function( $ ) {
-				const $autoAdvanceAfter = $('#stories_settings_auto_advance_after');
-				const $description = $autoAdvanceAfter.closest('fieldset').find('.description');
-				const $durationSection = $('#stories_settings_auto_advance_after_duration').closest('p');
-
-				$autoAdvanceAfter
-					.on('change', function() {
-						const $selectedOption = $('option:selected', this);
-
-						$description.text( $selectedOption.data('description') );
-						$durationSection.toggleClass( 'hidden', 'time' !== $selectedOption.prop('value') );
-					})
-					.trigger('change');
-			})( jQuery );
-		</script>
 		<?php
 	}
 

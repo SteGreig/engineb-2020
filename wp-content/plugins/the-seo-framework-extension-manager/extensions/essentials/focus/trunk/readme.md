@@ -9,8 +9,7 @@ This extension guides you through the process of writing targeted content that r
 
 ### Focus your content
 
-With over 1 billion competing websites, your pages barely stand a chance ranking on the first page of Google.
-So, writing quality content that ranks well in search engines isn't easy. This is where Focus comes in.
+With over 1 billion competing websites, your pages barely stand a chance ranking on the first page of Google. So, writing quality content that ranks well in search engines isn't easy. This is where Focus comes in.
 
 This extension helps you to focus your content to a few well-targeted search phrases, significantly increasing your chances to rank on the first page.
 
@@ -136,7 +135,7 @@ So, to prevent this from happening, Focus notifies you via this rating.
 
 One of the best ways to be found on a keyword is by placing it in the page URL. So, be sure to include it here.
 
-You can change your page URL right above the content editor.
+You can change your page URL in the sidebar under "Document > Permalink." On some WordPress setups you can find it above the content editor instead.
 
 ## FAQ
 
@@ -144,19 +143,21 @@ You can change your page URL right above the content editor.
 
 All languages have the requisite support for ratings.
 
+### What does "Essentials+" stand for?
+
+The Focus extension requires an Essentials subscription to use. The plus indicates that there's additional API support for our Premium subscribers. In the case of Focus, there's added dictionary API support for lexical lookup.
+
 ### Which languages are supported by the dictionary API?
 
-The API currently supports English only. Support for other languages will be added over time.
+The API currently supports English only. Support for other languages will be added over time. Processing a living language is difficult and time-consuming, so that can take a few years.
 
 ### Why are there only one or two inflections available?
 
-We're currently working on inflection lookups. When it's ready, an update will be sent out.
+We're still waiting for our API partner to provide reverse inflection lookups. When it's ready, an update will be sent out.
 
-### "A parsing failure occurred", what does this mean?
+### "A parsing failure occurred." What does this mean?
 
-When the content parser experiences any error, the rater shows this generic message.
-Most likely, your computer may be restraint in processing power in combination with page builders.
-This issue resolves automatically, as the parser reassesses its data every 45 seconds, or whenever the related content is updated.
+When the content parser experiences any error, the rater shows this generic message. Most likely, your computer may be restraint in processing power in combination with page builders. This issue resolves automatically, as the parser reassesses its data every 45 seconds, or whenever the related content is updated.
 
 ### Are page builders supported?
 Focus supports most page builders. However, page builders that rely on shortcodes may give incorrect assessments for the "introduction" and "subject density" ratings.
@@ -177,12 +178,42 @@ These builders work as intended:
 
 We're working on an update to improve accuracy for the affected page builders.
 
+## Developers
+
+### Filters
+
+Here you can find the available filters for Focus.
+
+#### Adjust supported focus elements
+
+```php
+add_filter( 'the_seo_framework_focus_elements', function( $elements ) {
+
+	// Add an overriding (dominating) check for pageTitle.
+	$elements['pageTitle'] = [ '#my-element > input' => 'dominate' ];
+
+	// Add an extra (appending) pageContent for parsing.
+	$elements['pageContent'] = [ '#my-element > input' => 'append' ];
+
+	return $elements;
+} );
+```
+
 ## Changelog
 
-### 1.4.0
+### 1.3.2
 
-[tsfep-release time="-1"]
+[tsfep-release time="December 18th, 2019"]
 
+* **Improved:** The lexical selector is now hidden when the current language isn't supported for the API.
+* **Fixed:** The spacing of the keyword inputs is now less likely to misalign when the words differ in length.
+
+### 1.3.1
+
+[tsfep-release time="November 5th, 2019"]
+
+* **Improved:** Addressed Gutenberg 6.4 (WP 5.3) changes (by fixing `wp.data.select( 'core/editor' ).isTyping` deprecation).
+* **Updated:** Removed backward compatibility checks. The extension now requires TSF v4.0 and later.
 * **API changes:**
 	* *June 1st, 2019*: The API has been updated to be more performant and secure. Although unlikely, you may see different dictionary results henceforth.
 

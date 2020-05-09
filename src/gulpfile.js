@@ -3,7 +3,7 @@
 /*
 	- WordPress Theme directory name
 */
-var projectTheme = 'custom-theme';
+var projectTheme = 'engineb';
 
 /*
 	- Node Modules

@@ -96,13 +96,12 @@ final class Admin extends Core {
 	 * @access private
 	 */
 	public function _init_menu() {
-
 		if ( \tsf_extension_manager()->can_do_settings() && \the_seo_framework()->load_options )
-			\add_action( 'admin_menu', [ $this, '_add_menu_link' ], 11 );
+			\add_action( 'admin_menu', [ $this, '_add_menu_link' ], 20 );
 	}
 
 	/**
-	 * Adds menu link for Local SEO, when possible, underneath The SEO Framework
+	 * Adds menu link for Local, when possible, underneath The SEO Framework
 	 * SEO settings.
 	 *
 	 * @since 1.0.0
@@ -114,7 +113,7 @@ final class Admin extends Core {
 
 		$menu = [
 			'parent_slug' => \the_seo_framework()->seo_settings_page_slug,
-			'page_title'  => 'Local SEO',
+			'page_title'  => 'Local',
 			'menu_title'  => 'Local',
 			'capability'  => 'manage_options',
 			'menu_slug'   => $this->local_page_slug,
@@ -132,7 +131,7 @@ final class Admin extends Core {
 	}
 
 	/**
-	 * Outputs Local SEO settings page.
+	 * Outputs Local settings page.
 	 *
 	 * @since 1.0.0
 	 * @access private
@@ -158,7 +157,7 @@ final class Admin extends Core {
 	}
 
 	/**
-	 * Hooks admin actions into the Local SEO pagehook.
+	 * Hooks admin actions into the Local pagehook.
 	 * Early enough for admin_notices and admin_head :).
 	 *
 	 * @since 1.0.0
@@ -180,7 +179,7 @@ final class Admin extends Core {
 	}
 
 	/**
-	 * Hooks admin AJAX actions into the Local SEO pagehook.
+	 * Hooks admin AJAX actions into the Local pagehook.
 	 *
 	 * @since 1.0.0
 	 *

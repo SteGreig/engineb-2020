@@ -13,6 +13,8 @@ $screen-sm-min: 576px;
 $screen-md-min: 768px;
 $screen-lg-min: 992px;
 $screen-xl-min: 1200px;
+$screen-xxl-min: 1400px;
+$screen-xxxl-min: 1600px;
 
 /// Media query for a max size of $screen-sm-min set inside settings > breakpoints
 /// @example .foo { @include sm-up {...} }

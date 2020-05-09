@@ -23,15 +23,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// ==ClosureCompiler==
-// @compilation_level ADVANCED_OPTIMIZATIONS
-// @output_file_name tsfem_e_monitor.min.js
-// @externs_url https://raw.githubusercontent.com/google/closure-compiler/master/contrib/externs/jquery-1.9.js
-// @externs_url https://raw.githubusercontent.com/sybrew/The-SEO-Framework-Extension-Manager/master/lib/js/tsfem.externs.js
-// @externs_url https://raw.githubusercontent.com/sybrew/The-SEO-Framework-Extension-Manager/master/extensions/premium/monitor/trunk/lib/js/externs/tsfem-monitor.externs.js
-// ==/ClosureCompiler==
-// http://closure-compiler.appspot.com/home
-
 'use strict';
 
 /**
@@ -236,9 +227,9 @@ window.tsfem_e_monitor = {
 					notice  = data.status['notice'];
 
 				if ( 'success' === status ) {
-					let issues = content['issues'],
-						stats = content['stats'],
-						lc = content['lc'],
+					let issues   = content['issues'],
+						stats    = content['stats'],
+						lc       = content['lc'],
 						settings = content['settings'];
 
 					if ( 'undefined' !== typeof settings ) {
@@ -343,7 +334,7 @@ window.tsfem_e_monitor = {
 				'action' : 'tsfem_e_monitor_get_requires_fix',
 				'nonce' : tsfem_e_monitor.nonce,
 			},
-			timeout: 3000,
+			timeout: 7000,
 			async: true,
 		} ).done( function( response ) {
 

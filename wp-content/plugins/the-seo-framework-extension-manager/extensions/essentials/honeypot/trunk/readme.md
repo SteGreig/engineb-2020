@@ -3,7 +3,7 @@ Location: https://theseoframework.com/extensions/honeypot/
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-This extension catches comment spammers through four lightweight yet powerful methods.
+This extension catches comment spammers with a 99.98% catch-rate through four lightweight yet powerful methods.
 
 ## Overview
 
@@ -92,7 +92,7 @@ There is no setup required, and no options are available.
 
 WordPress has various discussion settings, through which you can fine-tune how comments are displayed and moderated.
 
-These settings can be found at **Settings -> Discussion**.
+These settings can be found at **Settings > Discussion**.
 
 ### Gotta catch 'em all
 

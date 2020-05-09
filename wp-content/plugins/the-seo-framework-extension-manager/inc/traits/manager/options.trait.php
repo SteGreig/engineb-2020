@@ -324,7 +324,6 @@ trait Options {
 	 *
 	 * @since 1.0.0
 	 * @since 1.2.0 Expanded hashing algorithm.
-	 * @uses PHP 5.6 hash_equals : WordPress core has compat.
 	 *
 	 * @param string $data The data to compare hash with.
 	 * @return bool True when hash passes, false on failure.
@@ -391,12 +390,11 @@ trait Options {
 	 */
 	final protected function kill_options() {
 
-		$success = [];
-		$success[] = $this->delete_options_instance();
-		$success[] = \delete_option( TSF_EXTENSION_MANAGER_SITE_OPTIONS );
+		$success = [
+			$this->delete_options_instance(),
+			\delete_option( TSF_EXTENSION_MANAGER_SITE_OPTIONS )
+		];
 
-		$this->killed_options = ! in_array( false, $success, true );
-
-		return $this->killed_options;
+		return $this->killed_options = ! in_array( false, $success, true );
 	}
 }

@@ -3,7 +3,7 @@ Location: https://theseoframework.com/extensions/monitor/
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-This extension keeps track of your website's SEO, optimization, uptime, and statistics.
+This extension keeps track of your website's SEO optimizations and statistics.
 
 ## Overview
 
@@ -115,13 +115,27 @@ If you just initiated a crawl request, you might receive outdated or incorrect d
 
 *Because Monitor is a heavily dependent two-part system, these changes are annotated through Extension and API nodes.*
 
+### 1.2.4-beta-5
+
+[tsfep-release time="December 18th, 2019"]
+
+* **Changed:** The favicon.ico check is now hidden when a meta icon is found. We changed this because modern browsers no longer ping the ico file when a meta-icon is proposed.
+* **API - Our servers:**
+	* **December 17th, 2019:**
+		* **Fixed:** You can now disconnect from the Monitor service after moving domains.
+
+### 1.2.3-beta-5
+
+[tsfep-release time="November 5th, 2019"]
+
+* **Improved:** To honor the new Extension Manager interface, we restyled the non-default items.
+
 ### 1.2.2-beta-5
 
 [tsfep-release time="January 28th, 2019"]
 
 * **Extension:**
-	* **Changed:**
-		* This extension now uses TSF's script loader.
+	* **Changed:** This extension now uses TSF's script loader.
 
 ### 1.2.1-beta-5
 

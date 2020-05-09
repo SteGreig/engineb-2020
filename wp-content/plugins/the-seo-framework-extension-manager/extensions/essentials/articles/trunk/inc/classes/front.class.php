@@ -2,6 +2,7 @@
 /**
  * @package TSF_Extension_Manager\Extension\Articles\Classes
  */
+
 namespace TSF_Extension_Manager\Extension\Articles;
 
 defined( 'ABSPATH' ) or die;
@@ -31,6 +32,7 @@ if ( \tsf_extension_manager()->_has_died() or false === ( \tsf_extension_manager
  *
  * @since 1.2.0
  * @uses TSF_Extension_Manager\Traits
+ * @access private
  * @final
  */
 final class Front extends Core {
@@ -44,15 +46,19 @@ final class Front extends Core {
 	 * @since 1.0.0
 	 * @var array $is_json_valid : { key => bool }
 	 */
-	private $is_json_valid = [];
+	private $is_json_valid = [
+		'amp'    => true,
+		'nonamp' => true,
+	];
 
 	/**
 	 * Registers the image size name.
 	 *
 	 * @since 1.1.0
+	 * @since 2.0.0 Value changed from 'tsfem-e-articles-logo'.
 	 * @var string $image_size_name
 	 */
-	private $image_size_name = 'tsfem-e-articles-logo';
+	private $image_size_name = 'tsfem-e-articles-logo-rect';
 
 	/**
 	 * The constructor, initialize plugin.
@@ -60,27 +66,23 @@ final class Front extends Core {
 	 * @since 1.0.0
 	 */
 	private function construct() {
-
-		$this->is_json_valid = [
-			'amp'    => true,
-			'nonamp' => true,
-		];
-
-		$this->init();
+		\add_action( 'the_seo_framework_do_before_output', [ $this, '_init_articles_output' ], 10 );
+		\add_action( 'the_seo_framework_do_before_amp_output', [ $this, '_init_articles_output' ], 10 );
 	}
 
 	/**
-	 * Initializes hooks.
+	 * Initializes Articles output.
 	 *
-	 * @since 1.0.0
-	 * @since 1.4.0 Now tests for post type conditions prior executing.
+	 * @since 2.0.0
 	 */
-	private function init() {
+	public function _init_articles_output() {
 
 		if ( ! \the_seo_framework()->is_singular() ) return;
 
-		if ( ! in_array( \get_post_type(), $this->supported_post_types, true ) )
-			return;
+		$post_type = \get_post_type();
+		$settings  = $this->get_option( 'post_types' );
+
+		if ( empty( $settings[ $post_type ]['enabled'] ) ) return;
 
 		if ( $this->is_amp() ) {
 			//* Initialize output in The SEO Framework's front-end AMP meta object.
@@ -94,10 +96,14 @@ final class Front extends Core {
 	/**
 	 * Registers logo image size in WordPress.
 	 *
+	 * Note that it takes an initial render before the URL is available in WordPress;
+	 * their caches don't update as we process it.
+	 *
 	 * @since 1.1.0
+	 * @since 2.0.0 Updated the logo guidelines.
 	 */
 	private function register_logo_image_size() {
-		\add_image_size( $this->image_size_name, 60, 60, false );
+		\add_image_size( $this->image_size_name, 600, 60, false );
 	}
 
 	/**
@@ -234,15 +240,19 @@ final class Front extends Core {
 	 * Runs at 'the_seo_framework_after_output' filter.
 	 *
 	 * @since 1.0.0
-	 * @link https://developers.google.com/search/docs/data-types/articles
+	 * @since 2.0.2 No longer minifies the script when script debugging is activated.
+	 * @link https://developers.google.com/search/docs/data-types/article
 	 * @access private
 	 *
 	 * @return string The additional JSON-LD Article scripts.
 	 */
 	public function _get_articles_json_output() {
 
-		\the_seo_framework()->set_timezone();
+		$tsf = \the_seo_framework();
 
+		$tsf->set_timezone( 'UTC' );
+
+		// Should've used a generator... TODO? => Wait for TSF v4.1?
 		$data = [
 			$this->get_article_context(),
 			$this->get_article_type(),
@@ -256,7 +266,7 @@ final class Front extends Core {
 			$this->get_article_description(),
 		];
 
-		\the_seo_framework()->reset_timezone();
+		$tsf->reset_timezone();
 
 		if ( ! $this->is_json_valid() )
 			return '';
@@ -273,8 +283,13 @@ final class Front extends Core {
 			$this->get_article_data()
 		);
 
-		if ( ! empty( $data ) )
-			return sprintf( '<script type="application/ld+json">%s</script>', json_encode( $data, JSON_UNESCAPED_SLASHES ) ) . PHP_EOL;
+		if ( ! empty( $data ) ) {
+			$options  = 0;
+			$options |= JSON_UNESCAPED_SLASHES;
+			$options |= \the_seo_framework()->script_debug ? JSON_PRETTY_PRINT : 0;
+
+			return sprintf( '<script type="application/ld+json">%s</script>', json_encode( $data, $options ) ) . PHP_EOL;
+		}
 
 		return '';
 	}
@@ -335,15 +350,19 @@ final class Front extends Core {
 	 *
 	 * @since 1.0.0
 	 * @since 1.2.0 Now listens to post meta.
-	 * @todo TSF allow selection of article/news/blogpost.
-	 * @todo Maybe extension? i.e. News SEO.
 	 *
 	 * @requiredSchema Always
 	 * @ignoredSchema Never
 	 * @return array The Article type.
 	 */
 	private function get_article_type() {
-		return [ '@type' => $this->get_post_meta( 'type' ) ];
+
+		// We can collapse these 3 lines into one using PHP 7+...
+		$settings  = $this->get_option( 'post_types' );
+		$post_type = \get_post_type();
+		$_default  = \tsf_extension_manager()->coalesce_var( $settings[ $post_type ]['default_type'], 'Article' );
+
+		return [ '@type' => static::filter_article_type( $this->get_post_meta( 'type', $_default ) ) ];
 	}
 
 	/**
@@ -361,13 +380,7 @@ final class Front extends Core {
 		if ( ! $this->is_json_valid() )
 			return [];
 
-		$tsf = \the_seo_framework();
-
-		if ( method_exists( $tsf, 'get_current_permalink' ) ) {
-			$url = $tsf->get_current_permalink();
-		} else {
-			$url = $tsf->the_url_from_cache();
-		}
+		$url = \the_seo_framework()->get_current_permalink();
 
 		if ( ! $url ) {
 			$this->invalidate( 'amp' );
@@ -391,6 +404,7 @@ final class Front extends Core {
 	 * }
 	 * @since 1.0.0
 	 * @since 1.3.0 Added TSF v3.1 compat.
+	 * @since 2.0.0 Now trims the title to 110 characters.
 	 *
 	 * @requiredSchema AMP
 	 * @ignoredSchema Never
@@ -404,15 +418,17 @@ final class Front extends Core {
 		$id  = $this->get_current_id();
 		$tsf = \the_seo_framework();
 
-		if ( method_exists( $tsf, 'get_raw_generated_title' ) ) {
-			$title = $tsf->get_raw_generated_title( [ 'id' => $id ] );
-		} else {
-			$title = $tsf->post_title_from_ID( $id ) ?: $tsf->title_from_custom_field( '', false, $id );
-			$title = trim( $tsf->s_title_raw( $title ) );
+		$title = $tsf->get_raw_generated_title( [ 'id' => $id ] );
+
+		// Does not consider UTF-8 support. However, the regex does.
+		if ( strlen( $title ) > 110 ) {
+			preg_match( '/.{0,110}([^\P{Po}\'\"]|\p{Z}|$){1}/su', trim( $title ), $matches );
+			$title = isset( $matches[0] ) ? ( $matches[0] ?: '' ) : '';
+			$title = trim( $title );
 		}
 
-		if ( ! $title || mb_strlen( $title ) > 110 ) {
-			$this->invalidate( 'amp' );
+		if ( ! $title ) {
+			$this->invalidate( 'both' );
 			return [];
 		}
 
@@ -423,11 +439,6 @@ final class Front extends Core {
 
 	/**
 	 * Returns the Article Image.
-	 *
-	 * @NOTE If the image is smaller than 696 pixels width : {
-	 *   'amp'    => Will invalidate output.
-	 *   'nonamp' => Will return empty.
-	 * }
 	 *
 	 * @since 1.0.0
 	 *
@@ -464,6 +475,7 @@ final class Front extends Core {
 	 *
 	 * @since 1.0.0
 	 * @since 1.4.0 Now uses the new image generator, and now returns multiple image objects.
+	 * @since 2.0.1 Now accepts images as small as 696px for non-AMP.
 	 *
 	 * @return array The article image parameters. Unescaped.
 	 */
@@ -471,15 +483,19 @@ final class Front extends Core {
 
 		$id = $this->get_current_id();
 
-		if ( version_compare( THE_SEO_FRAMEWORK_VERSION, '3.3.0', '>=' ) ) {
+		$min_width = $this->is_amp() ? 1200 : 696;
+
+		if ( version_compare( THE_SEO_FRAMEWORK_VERSION, '4.0.0', '>=' ) ) {
 
 			$images = [];
 
+			// TODO: Do we want to take images from the content? Users have complained about this...
+			// ... We'd have to implement (and revoke) a filter, however.
 			foreach ( \the_seo_framework()->get_image_details( null, false, 'schema', true ) as $image ) {
 
 				if ( ! $image['url'] ) continue;
 
-				if ( $image['width'] && $image['width'] > 1200 ) {
+				if ( $image['width'] && $image['width'] >= $min_width ) {
 					$images[] = [
 						'@type'  => 'ImageObject',
 						'url'    => $image['url'],
@@ -509,7 +525,7 @@ final class Front extends Core {
 
 				if ( ! $w ) {
 					return $url;
-				} elseif ( $w >= 1200 ) {
+				} elseif ( $w >= $min_width ) {
 					return [
 						'@type'  => 'ImageObject',
 						'url'    => $url,
@@ -529,7 +545,7 @@ final class Front extends Core {
 					$w   = $_src[1];
 					$h   = $_src[2];
 
-					if ( $w >= 1200 )
+					if ( $w >= $min_width )
 						return [
 							'@type'  => 'ImageObject',
 							'url'    => $url,
@@ -547,8 +563,10 @@ final class Front extends Core {
 	 * Returns the Article Published Date.
 	 *
 	 * @since 1.0.0
-	 * @since 1.0.1 : 1. Now also outputs on non-AMP.
-	 *                2. Now only invalidates AMP when something's wrong.
+	 * @since 1.0.1 1. Now also outputs on non-AMP.
+	 *              2. Now only invalidates AMP when something's wrong.
+	 * @since 2.0.1 1. Now uses gmdate instead of date, to account for the timezone change in TSF 4.0.4.
+	 *              2. Now uses the post gmt date.
 	 *
 	 * @requiredSchema AMP (docs)
 	 * @ignoredSchema nonAMP
@@ -564,10 +582,10 @@ final class Front extends Core {
 			return [];
 		}
 
-		$i = strtotime( $post->post_date );
+		$i = strtotime( $post->post_date_gmt );
 
 		return [
-			'datePublished' => \esc_attr( date( 'c', $i ) ),
+			'datePublished' => \esc_attr( gmdate( 'c', $i ) ),
 		];
 	}
 
@@ -575,7 +593,9 @@ final class Front extends Core {
 	 * Returns the Article Modified Date.
 	 *
 	 * @since 1.0.0
-	 * @since 1.0.1 : 1. Now also outputs on non-AMP.
+	 * @since 1.0.1 Now also outputs on non-AMP.
+	 * @since 2.0.1 1. Now uses gmdate instead of date, to account for the timezone change in TSF 4.0.4.
+	 *              2. Now uses the post gmt date.
 	 *
 	 * @requiredSchema Never
 	 * @ignoredSchema nonAMP
@@ -589,10 +609,10 @@ final class Front extends Core {
 		if ( ! ( $post = $this->get_current_post() ) )
 			return [];
 
-		$i = strtotime( $post->post_modified );
+		$i = strtotime( $post->post_modified_gmt );
 
 		return [
-			'dateModified' => \esc_attr( date( 'c', $i ) ),
+			'dateModified' => \esc_attr( gmdate( 'c', $i ) ),
 		];
 	}
 
@@ -639,7 +659,8 @@ final class Front extends Core {
 	 * @since 1.0.0
 	 * @since 1.0.1 : 1. Now also outputs on non-AMP.
 	 *                2. Now only invalidates AMP when something's wrong.
-	 * @since 1.1.0 : Now fetches TSF 3.0 logo ID.
+	 * @since 1.1.0 Now fetches TSF 3.0 logo ID.
+	 * @since 2.0.0 Now tests for the knowledge type.
 	 *
 	 * @requiredSchema AMP
 	 * @ignoredSchema nonAMP
@@ -652,13 +673,18 @@ final class Front extends Core {
 
 		$tsf = \the_seo_framework();
 
+		if ( ! static::is_organization() ) {
+			$this->invalidate( 'amp' );
+			return [];
+		}
+
 		/**
 		 * @since 1.0.0
-		 * @param string $name The articles name.
+		 * @param string $name The articles publisher name.
 		 */
 		$name = (string) \apply_filters( 'the_seo_framework_articles_name', $tsf->get_option( 'knowledge_name' ) ) ?: $tsf->get_blogname();
 
-		$_default_img_id = (int) $tsf->get_option( 'knowledge_logo_id' ) ?: \get_option( 'site_icon' );
+		$_default_img_id = (int) $this->get_option( 'logo' )['id'] ?: (int) $tsf->get_option( 'knowledge_logo_id' ) ?: \get_option( 'site_icon' );
 		/**
 		 * @since 1.0.0
 		 * @param int $img_id The image ID to use for the logo.
@@ -704,7 +730,7 @@ final class Front extends Core {
 				'name'  => \esc_attr( $name ),
 				'logo'  => [
 					'@type'  => 'ImageObject',
-					'url'    => \esc_url( $url, [ 'http', 'https' ] ),
+					'url'    => \esc_url( $url, [ 'https', 'http' ] ),
 					'width'  => abs( filter_var( $w, FILTER_SANITIZE_NUMBER_INT ) ),
 					'height' => abs( filter_var( $h, FILTER_SANITIZE_NUMBER_INT ) ),
 				],
@@ -732,10 +758,11 @@ final class Front extends Core {
 
 		$tsf = \the_seo_framework();
 
-		if ( method_exists( $tsf, 'get_description' ) ) {
-			$description = $tsf->get_description( $this->get_current_id() );
-		} else {
-			$description = $tsf->description_from_cache();
+		$description = \esc_attr( $tsf->get_description( $this->get_current_id() ) );
+
+		if ( ! $description ) {
+			// Optional.
+			return [];
 		}
 
 		return [

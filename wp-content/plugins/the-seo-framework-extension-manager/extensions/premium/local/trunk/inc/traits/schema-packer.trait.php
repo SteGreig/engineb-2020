@@ -130,11 +130,11 @@ trait Schema_Packer {
 	 * @return string The URL without scheme.
 	 */
 	protected function remove_scheme( $url ) {
-		return str_ireplace( [ 'http://', 'https://' ], '', \esc_url( $url, [ 'http', 'https' ] ) );
+		return str_ireplace( [ 'https://', 'http://' ], '', \esc_url( $url, [ 'https', 'http' ] ) );
 	}
 
 	/**
-	 * Returns the current Local SEO schema.
+	 * Returns the current Local schema.
 	 *
 	 * @since 1.0.0
 	 *

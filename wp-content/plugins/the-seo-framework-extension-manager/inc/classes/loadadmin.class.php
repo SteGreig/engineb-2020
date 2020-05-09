@@ -2,6 +2,7 @@
 /**
  * @package TSF_Extension_Manager\Classes
  */
+
 namespace TSF_Extension_Manager;
 
 defined( 'ABSPATH' ) or die;
@@ -162,7 +163,7 @@ final class LoadAdmin extends AdminPages {
 
 		if ( ! $show_notice ) return;
 
-		$notice = $this->convert_markdown(
+		$notice = \the_seo_framework()->convert_markdown(
 			sprintf(
 				/* translators: Markdown. %s = API URL */
 				\esc_html__(
@@ -579,8 +580,7 @@ final class LoadAdmin extends AdminPages {
 			$title = \__( 'Get support via mail', 'the-seo-framework-extension-manager' );
 			$text  = \__( 'Private Support', 'the-seo-framework-extension-manager' );
 
-			// $class  = 'tsfem-button-primary tsfem-button-flat tsfem-button-primary-bright';
-			$class  = 'tsfem-button-primary tsfem-button-flat';
+			$class  = 'tsfem-button';
 			$class .= $icon ? ' tsfem-button-star' : '';
 		} else {
 			$url = 'https://github.com/sybrew/The-SEO-Framework-Extension-Manager/issues/new/choose';
@@ -588,7 +588,7 @@ final class LoadAdmin extends AdminPages {
 			$title = \__( 'File an issue with us', 'the-seo-framework-extension-manager' );
 			$text  = \__( 'Public Support', 'the-seo-framework-extension-manager' );
 
-			$class  = 'tsfem-button-primary tsfem-button-flat tsfem-button-primary-bright';
+			$class  = 'tsfem-button';
 			$class .= $icon ? ' tsfem-button-love' : '';
 		}
 
@@ -606,9 +606,10 @@ final class LoadAdmin extends AdminPages {
 	 * Also loads scripts and styles if out of The SEO Framework's context.
 	 *
 	 * @since 1.3.0
+	 * @since 2.3.0 Added the info notice type. Removed support for the 'success' notice type.
 	 *
 	 * @param string $message The notice message. Expected to be escaped if $escape is false.
-	 * @param string $type    The notice type : 'updated', 'success', 'error', 'warning'.
+	 * @param string $type    The notice type : 'updated', 'error', 'warning'.
 	 * @param bool   $a11y    Whether to add an accessibility icon.
 	 * @param bool   $escape  Whether to escape the whole output.
 	 * @return string The dismissible error notice.
@@ -616,9 +617,12 @@ final class LoadAdmin extends AdminPages {
 	public function get_dismissible_notice( $message = '', $type = 'updated', $a11y = true, $escape = true ) {
 
 		switch ( $type ) :
-			case 'success':
 			case 'updated':
 				$type = 'tsfem-notice-success';
+				break;
+
+			case 'info':
+				$type = 'tsfem-notice-info';
 				break;
 
 			case 'warning':
@@ -650,11 +654,12 @@ final class LoadAdmin extends AdminPages {
 	 * @since 1.3.0
 	 *
 	 * @param string $message The notice message. Expected to be escaped if $escape is false.
-	 * @param string $type    The notice type : 'updated', 'success', 'error', 'warning'.
+	 * @param string $type    The notice type : 'updated', 'info', 'error', 'warning'.
 	 * @param bool   $a11y    Whether to add an accessibility icon.
 	 * @param bool   $escape  Whether to escape the whole output.
 	 */
 	public function do_dismissible_notice( $message = '', $type = 'updated', $a11y = true, $escape = true ) {
+		// phpcs:ignore, WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo $this->get_dismissible_notice( $message, $type, (bool) $a11y, (bool) $escape );
 	}
 
@@ -676,12 +681,11 @@ final class LoadAdmin extends AdminPages {
 	 */
 	public function _set_ajax_menu_link( $slug, $capability = 'manage_options' ) {
 
-		if ( ( ! $slug = \sanitize_key( $slug ) )
-		|| ( ! $capability = \sanitize_key( $capability ) )
-		|| ! \current_user_can( $capability )
-		) {
+		$slug       = \sanitize_key( $slug );
+		$capability = \sanitize_key( $capability );
+
+		if ( ! $slug || ! \current_user_can( $capability ) )
 			return false;
-		}
 
 		static $parent_set = false;
 		static $set        = [];
@@ -925,6 +929,8 @@ final class LoadAdmin extends AdminPages {
 	 * Test drives extension to see if an error occurs.
 	 *
 	 * @since 1.0.0
+	 * @since 2.2.0 1. Now bypasses the WP 5.2 fatal error handler on AJAX.
+	 *              2. Now clears the WP 5.2 fatal error hanlder message on non-AJAX.
 	 *
 	 * @param string $slug The extension slug to load.
 	 * @param bool   $ajax Whether this is an AJAX request.
@@ -939,6 +945,12 @@ final class LoadAdmin extends AdminPages {
 	 */
 	protected function test_extension( $slug, $ajax = false ) {
 
+		if ( $ajax ) {
+			\add_filter( 'wp_die_ajax_handler', [ $this, '_disable_wp_fatal_error_handler_cb' ], 9999 );
+		} else {
+			\add_filter( 'wp_php_error_message', [ $this, '_disable_wp_fatal_error_handler' ], 9999 );
+		}
+
 		$this->get_verification_codes( $_instance, $bits );
 		Extensions::initialize( 'load', $_instance, $bits );
 
@@ -947,8 +959,38 @@ final class LoadAdmin extends AdminPages {
 
 		Extensions::reset();
 
+		if ( $ajax ) {
+			\remove_filter( 'wp_die_ajax_handler', [ $this, '_disable_wp_fatal_error_handler_cb' ], 9999 );
+		} else {
+			\remove_filter( 'wp_php_error_message', [ $this, '_disable_wp_fatal_error_handler' ], 9999 );
+		}
+
 		return $result;
 	}
+
+	/**
+	 * Disables the WP fatal error handler callback, so ours works again; making error notices legible.
+	 * This is a separated private function because we must reset it after the extension activation failed.
+	 *
+	 * @since 2.2.0
+	 * @access private
+	 *
+	 * @return string
+	 */
+	public function _disable_wp_fatal_error_handler_cb() {
+		return '__return_empty_string';
+	}
+
+	/**
+	 * Disables the WP fatal error handler, so ours works again; making error notices legible.
+	 * This is a separated private function because we must reset it after the extension activation failed.
+	 *
+	 * @since 2.2.0
+	 * @access private
+	 *
+	 * @return void
+	 */
+	public function _disable_wp_fatal_error_handler() { }
 
 	/**
 	 * Enables extension through options.

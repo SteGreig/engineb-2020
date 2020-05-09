@@ -2,6 +2,7 @@
 /**
  * @package TSF_Extension_Manager\Classes
  */
+
 namespace TSF_Extension_Manager;
 
 defined( 'ABSPATH' ) or die;
@@ -25,6 +26,7 @@ defined( 'ABSPATH' ) or die;
 
 /**
  * Require user interface trait.
+ *
  * @since 1.0.0
  */
 \TSF_Extension_Manager\_load_trait( 'core/ui' );
@@ -81,7 +83,6 @@ class AdminPages extends AccountActivation {
 
 		//* Initialize TSF Extension Manager page actions.
 		\add_action( 'admin_init', [ $this, '_load_tsfem_admin_actions' ] );
-
 	}
 
 	/**
@@ -99,9 +100,7 @@ class AdminPages extends AccountActivation {
 		if ( ! \TSF_Extension_Manager\can_do_manager_settings() )
 			return;
 
-		$network_mode = $this->is_plugin_in_network_mode();
-
-		if ( $network_mode ) {
+		if ( $this->is_plugin_in_network_mode() ) {
 			//* TODO.
 			//	\add_action( 'network_admin_menu', [ $this, 'add_network_menu_link' ], 11 );
 		} else {
@@ -124,7 +123,7 @@ class AdminPages extends AccountActivation {
 		$menu = [
 			'parent_slug' => \the_seo_framework()->seo_settings_page_slug,
 			'page_title'  => 'Extension Manager',
-			'menu_title'  => \esc_html__( 'Extensions', 'the-seo-framework-extension-manager' ),
+			'menu_title'  => 'Extension Manager',
 			'capability'  => TSF_EXTENSION_MANAGER_MAIN_ADMIN_ROLE,
 			'menu_slug'   => $this->seo_extensions_page_slug,
 			'callback'    => [ $this, '_init_extension_manager_page' ],
@@ -135,9 +134,10 @@ class AdminPages extends AccountActivation {
 		if ( $notice_count ) {
 			/**
 			 * TODO Update these when clearing them via JS.
+			 *
 			 * @see /wp-admin/menu.php @ $awaiting_mod & edit-comments.js' updateCountText & updateInModerationText
 			 */
-			$notice_i18n = number_format_i18n( $notice_count );
+			$notice_i18n = \number_format_i18n( $notice_count );
 			$notice_text = sprintf(
 				/* translators: %s: number of notices waiting */
 				_n( '%s notice waiting', '%s notices waiting', $notice_count, 'the-seo-framework-extension-manager' ),
@@ -246,6 +246,9 @@ class AdminPages extends AccountActivation {
 		//* Add something special for Vivaldi and Android.
 		\add_action( 'admin_head', [ $this, '_output_theme_color_meta' ], 0 );
 
+		//* We don't want other plugins crashing this... Output early.
+		\add_action( 'tsfem_content', [ $this, '_output_symbols' ], 0 );
+
 		return $run = true;
 	}
 
@@ -334,36 +337,62 @@ class AdminPages extends AccountActivation {
 	}
 
 	/**
+	 * Outputs symbols and icons for use in browser.
+	 *
+	 * @since 2.2.0
+	 * @access private
+	 */
+	final public function _output_symbols() {
+		$this->get_view( 'layout/pages/symbols' );
+	}
+
+	/**
 	 * Echos a pane wrap.
 	 *
 	 * @since 1.0.0
-	 * @since 2.0.1: Added the push argumnet.
+	 * @since 2.0.1 Added the push argument.
+	 * @since 2.2.0 Added the logo, wide, tall, and fcbargs arguments.
 	 * @access private
 	 *
-	 * @param string $title The pane title.
+	 * @param string $title   The pane title.
 	 * @param string $content The escaped pane content.
-	 * @param array $args The output arguments : {
-	 *   'full'     bool   : Whether to output a half or full pane.
-	 *   'collapse' bool   : Whether able to collapse the pane.
-	 *   'move'     bool   : Whether to be able to move the pane.
-	 *   'push'     bool   : Whether to push other panes away in flexibility.
-	 *   'pane_id'  string : The pane div ID.
-	 *   'ajax'     bool   : Whether to use ajax.
-	 *   'ajax_id'  string : The AJAX div ID.
+	 * @param array  $args    The output arguments : {
+	 *   'logo'       array    : An array with svg, 1x, and 2x logo links. 1x is required. svg is preferred.
+	 *   'full'       bool     : Whether to output a two wide and high pane.
+	 *   'wide'       bool     : Whether to output a two wide pane.
+	 *   'tall'       bool     : Whether to output a two tall pane. Quite useless and ugly.
+	 *   'collapse'   bool     : Whether able to collapse the pane.
+	 *   'move'       bool     : Whether to be able to move the pane.
+	 *   'push'       bool     : Whether to push other panes away in flexibility.
+	 *   'pane_id'    string   : The pane div ID.
+	 *   'ajax'       bool     : Whether to use ajax.
+	 *   'ajax_id'    string   : The AJAX div ID.
+	 *   'footer'     callable : Whether to add a footer wrap. If set, it must be
+	 *                           a callable. If secure_obj is also true, it must be an
+	 *                           object and it will pass the class object.
+	 *   'fcbargs'    iterable : A array of arguments to pass to the footer callback. Gets unpacked.
 	 * }
 	 * @param string $extra Extra header output placed between the title and ajax loader.
 	 */
 	final public function _do_pane_wrap( $title = '', $content = '', $args = [], $extra = '' ) {
 
-		$args = array_merge( [
-			'full'     => true,
-			'collapse' => true,
-			'move'     => false,
-			'push'     => false,
-			'pane_id'  => '',
-			'ajax'     => false,
-			'ajax_id'  => '',
-		], $args );
+		$args = array_merge(
+			[
+				'logo'     => [],
+				'full'     => true,
+				'wide'     => false,
+				'tall'     => false,
+				'collapse' => true,
+				'move'     => false,
+				'push'     => false,
+				'pane_id'  => '',
+				'ajax'     => false,
+				'ajax_id'  => '',
+				'footer'   => null,
+				'fcbargs'  => [],
+			],
+			$args
+		);
 
 		$this->get_view( 'layout/general/pane', get_defined_vars() );
 	}
@@ -372,12 +401,17 @@ class AdminPages extends AccountActivation {
 	 * Echos a pane wrap with callable function, rather than passing content.
 	 *
 	 * @since 1.3.0
+	 * @since 2.0.1 Added the push argument.
+	 * @since 2.2.0 Added the logo, wide, tall, cbargs, and fcbargs arguments.
 	 * @access private
 	 *
-	 * @param string $title The pane title.
+	 * @param string $title    The pane title.
 	 * @param string $callable The callable function or method that echos content.
-	 * @param array $args The output arguments : {
-	 *   'full'       bool     : Whether to output a half or full pane.
+	 * @param array  $args     The output arguments : {
+	 *   'logo'       array    : An array with svg, 1x, and 2x logo links. 1x is required. svg is preferred.
+	 *   'full'       bool     : Whether to output a two wide and high pane.
+	 *   'wide'       bool     : Whether to output a two wide pane.
+	 *   'tall'       bool     : Whether to output a two tall pane. Quite useless and ugly.
 	 *   'collapse'   bool     : Whether able to collapse the pane.
 	 *   'move'       bool     : Whether to be able to move the pane.
 	 *   'push'       bool     : Whether to push other panes away in flexibility.
@@ -388,22 +422,32 @@ class AdminPages extends AccountActivation {
 	 *   'footer'     callable : Whether to add a footer wrap. If set, it must be
 	 *                           a callable. If secure_obj is also true, it must be an
 	 *                           object and it will pass the class object.
+	 *   'cbargs'     iterable : A array of arguments to pass to the callback. Gets unpacked.
+	 *   'fcbargs'    iterable : A array of arguments to pass to the footer callback. Gets unpacked.
 	 * }
 	 * @param string $extra Extra header output placed between the title and ajax loader.
 	 */
 	final public function _do_pane_wrap_callable( $title = '', $callable = '', $args = [], $extra = '' ) {
 
-		$args = array_merge( [
-			'full'       => true,
-			'collapse'   => true,
-			'move'       => false,
-			'push'       => false,
-			'pane_id'    => '',
-			'ajax'       => false,
-			'ajax_id'    => '',
-			'secure_obj' => false,
-			'footer'     => null,
-		], $args );
+		$args = array_merge(
+			[
+				'logo'       => [],
+				'full'       => true,
+				'wide'       => false,
+				'tall'       => false,
+				'collapse'   => true,
+				'move'       => false,
+				'push'       => false,
+				'pane_id'    => '',
+				'ajax'       => false,
+				'ajax_id'    => '',
+				'secure_obj' => false,
+				'footer'     => null,
+				'cbargs'     => [],
+				'fcbargs'    => [],
+			],
+			$args
+		);
 
 		$this->get_view( 'layout/general/pane', get_defined_vars() );
 	}
@@ -417,8 +461,8 @@ class AdminPages extends AccountActivation {
 	 * @since 1.0.0
 	 * @access private
 	 *
-	 * @param string $name Field name base
-	 * @return string Full field name
+	 * @param string $name Field name base.
+	 * @return string Full field name.
 	 */
 	final public function _get_field_name( $name ) {
 		return sprintf( '%s[%s]', self::SETTINGS_FIELD, $name );
@@ -443,8 +487,8 @@ class AdminPages extends AccountActivation {
 	 * @since 1.0.0
 	 * @access private
 	 *
-	 * @param string $id Field id base
-	 * @return string Full field id
+	 * @param string $id Field id base.
+	 * @return string Full field id.
 	 */
 	final public function _get_field_id( $id ) {
 		return sprintf( '%s[%s]', self::SETTINGS_FIELD, $id );
@@ -457,8 +501,8 @@ class AdminPages extends AccountActivation {
 	 * @access private
 	 * @uses $this->_get_field_id() Constructs id attributes for use in form fields.
 	 *
-	 * @param string $id Field id base
-	 * @param boolean $echo echo or return
+	 * @param string  $id   Field id base.
+	 * @param boolean $echo Whether to echo or return.
 	 * @return string Full field id
 	 */
 	final public function _field_id( $id, $echo = true ) {
@@ -479,7 +523,7 @@ class AdminPages extends AccountActivation {
 	 * @param string $key The action key.
 	 */
 	final public function _nonce_action_field( $key ) {
-		//* Already escaped.
+		// phpcs:ignore, WordPress.Security.EscapeOutput.OutputNotEscaped -- Already escaped.
 		echo $this->_get_nonce_action_field( $key );
 	}
 
