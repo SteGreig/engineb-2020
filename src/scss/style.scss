@@ -43,8 +43,12 @@
 @import 'objects/grid';
 
 // COMPONENTS
+@import 'components/header';
+@import 'components/mobile-nav';
 @import 'components/gdpr';
 @import 'components/ctas';
+@import 'components/pb-hero';
+@import 'components/pb-persona-module';
 @import 'components/pb-banners';
 @import 'components/pb-banners-full-bleed';
 @import 'components/pb-copy';
@@ -60,5 +64,6 @@
 @import 'components/pb-accordion';
 @import 'components/pb-copy-blocks';
 @import 'components/pb-copy-block-picker';
+@import 'components/footer';
 
 // TRUMPS

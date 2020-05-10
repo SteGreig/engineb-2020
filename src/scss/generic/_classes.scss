@@ -39,6 +39,62 @@
 	max-width: 100%;
 	height: auto;
 }
+
 .align--center { text-align: center; }
 .align--left { text-align: left; }
 .align--right { text-align: right; }
+
+// For lazy loaded elements
+.lazyload,
+.lazyloading {
+	opacity: 0;
+}
+
+.lazyloaded {
+    opacity: 1;
+    transition: opacity 300ms;
+}
+// ---
+
+.clearfix {
+	@include cf;
+}
+
+.w100 {
+	width: 100%;
+}
+
+.flex { @include flexbox; }
+.items-start { @include align-items(start); }
+.items-center { @include align-items(center); }
+.justify-center { @include justify-content(center); }
+.space-between { @include justify-content(space-between); }
+.flex-wrap { @include flex-wrap(wrap); }
+.flex-col { @include flex-direction(column); }
+.flex-row { @include flex-direction(row); }
+
+.relative {
+	position: relative;
+}
+
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    stroke-width: 0;
+    stroke: currentColor;
+    fill: currentColor;
+}
+
+.hide-scrollbar {
+	scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE10+ */
+
+    &::-webkit-scrollbar { 
+        display: none; 
+    }
+}
+
+.scroll-touch {
+	-webkit-overflow-scrolling: touch;
+}

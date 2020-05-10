@@ -29,6 +29,10 @@
 	 */
 	include( plugin_dir_path(__FILE__) . 'inc/custom/tracking-gtm.php' );
 	include( plugin_dir_path(__FILE__) . 'inc/custom/allow-svg-uploads.php' );
+	include( plugin_dir_path(__FILE__) . 'inc/custom/display-svg-icon.php' );
+	include( plugin_dir_path(__FILE__) . 'inc/custom/defer-scripts.php' );
+	include( plugin_dir_path(__FILE__) . 'inc/custom/gravity-forms-cleanup.php' );
+	include( plugin_dir_path(__FILE__) . 'inc/custom/limit-content-length.php' );
 
 
 

@@ -5,6 +5,8 @@
 body {
 	font-family: $primaryFont, sans-serif;
 	font-size: 1rem;
+	background: $brandBlue;
+	background: $brandGrey;
 }
 
 html, body {
@@ -17,19 +19,27 @@ html, body {
 	box-sizing: border-box;
 	padding: 35px;
 
-	@include lg-up {
-		max-width: 1000px;
-		margin: 0 auto;
+	&--p0 {
+		padding: 0;
 	}
 
-	@include xl-up {
-		max-width: 1200px;
+	@include lg-up {
+		max-width: 1400px;
+		margin: 0 auto;
 	}
 	
 }
 
-.overlay {
+img {
+	max-width: 100%;
+}
 
+a:not(.cta) {
+	font-weight: 700;
+	color: #fff;
+}
+
+.overlay {
 	background: rgba($Black, .3);
 	top:0;
 	bottom: 0;

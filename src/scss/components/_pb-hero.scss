@@ -1,0 +1,135 @@
+////
+///	
+/// @group  Components (Copy & Image)
+/// @author Rob Watson
+////
+
+.section--hero {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+
+  @include lg-up {
+    background-image: url(../../assets/img/body-round-bg.svg);
+    background-position: 140% bottom;
+    background-repeat: no-repeat;
+    background-size: 85%;
+  }
+
+  &:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background-image: url(../../assets/img/rays.svg);
+    background-repeat: no-repeat;
+    background-size: 400%;
+    background-position: 80% 0;
+
+    @include xs-up {
+      background-position: 80% 20%;
+    }
+
+    @include sm-up {
+      background-position: 80% 30%;
+    }
+
+    @include lg-up {
+      background-size: cover;
+      background-position: 75% 20%;
+    }
+  }
+
+  &__container {
+    @include flex-direction(column);
+    padding: 0;
+    position: relative;
+    z-index: 2;
+    height: 100%;
+
+    @include lg-up {
+      @include flex-direction(row);
+      text-align: left;
+    }
+  }
+
+  &__header {
+    font-size: 2.8125rem;
+    padding: 0 40px 20px;
+    max-width: 350px;
+    margin: 0 auto;
+
+    @include lg-up {
+      font-size: 3.6rem;
+      padding: 30px 30px 30px 50px;
+      max-width: 50%;
+      margin: 0;
+    }
+
+    @include lg-up {
+      font-size: 4.5rem;
+      padding-right: 50px;
+    }
+
+    @include xl-up {
+      font-size: 5rem;
+      padding-right: 100px;
+    }
+  }
+
+  &__image {
+    width: 90%;
+    margin: 20px auto 0;
+    max-width: 350px;
+    max-height: 40vh;
+
+    @include lg-up {
+      width: 50%;
+      margin: 0;
+      padding: 30px 50px 30px 30px;
+      max-width: 500px;
+      max-height: none;
+    }
+
+    @include lg-up {
+      max-width: 580px;
+      padding-top: 50px;
+    }
+
+    @include xxxl-up {
+      max-width: 650px;
+    }
+  }
+}
+
+.scroll-arrow {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  border: none;
+  background: none;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+
+  &:hover img {
+    animation: .6s bounce infinite linear;
+  }
+
+  span {
+    margin-bottom: 5px;
+  }
+}
+
+@keyframes bounce {
+  50% {
+    transform: translateY(40%);
+  }
+}

@@ -1,0 +1,186 @@
+// --------------------------------------------------------------------------------------------------
+// Header
+// --------------------------------------------------------------------------------------------------
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 30px;
+    transition: background .3s;
+    z-index: 1000;
+
+    @include lg-up {
+        padding: 20px;
+    }
+
+    &--sticky {
+        position: fixed;
+    }
+
+    &__contact-cta.cta {
+        display: none;
+
+        @include lg-up {
+            display: block;
+        }
+    }
+}
+
+.mob-nav-toggle {
+    margin-left: auto;
+    background: none;
+    border: none;
+    padding: 0;
+    position: relative;
+    z-index: 1000;
+
+    &:focus {
+        outline: none;
+    }
+
+    .icon {
+        color: #fff;
+        font-size: 2rem;
+    }
+
+    img {
+        width: 34px;
+        height: 24px;
+    }
+
+    .close {
+        display: none;
+    }
+
+    @include lg-up {
+        display: none;
+    }
+}
+
+.site-logo {
+    position: relative;
+    z-index: 1000;
+
+    &:hover .site-logo__img--main {
+        opacity: 0;
+    }
+}
+
+.site-logo__img {
+    width: 100px;
+    display: block;
+    position: relative;
+    z-index: 2;
+    transition: .3s;
+
+    &--alt {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+
+    &--main.hide {
+        opacity: 0;
+    }
+
+    @include md-up {
+        width: 100px;
+    }
+
+    @include lg-up {
+        width: 130px;
+    }
+}
+
+
+// DESKTOP NAV
+.desktop-nav {
+    display: none;
+
+    @include lg-up {
+        display: block;
+        margin-left: 20px;
+        margin: 0 auto;
+    }
+
+    > ul > li {
+        display: inline-block;
+        position: relative;
+
+        &:hover > a {
+            text-shadow: 0 0 1px #fff;
+        }
+
+        &.menu-item--active > a {
+            font-weight: 700;
+        }
+    }
+
+    // Hide Home and Contact links from desktop nav
+    > ul > li:last-child {
+        display: none;
+    }
+
+    > ul > li > a {
+        display: block;
+        color: #fff;
+        text-decoration: none;
+        padding: 8px 6px;
+        font-weight: 300;
+        font-size: .85rem;
+
+        @include lg-up {
+            padding: 12px 14px;
+            font-size: .9rem;
+        }
+
+        @include xl-up {
+            font-size: 1rem;
+        }
+    }
+
+    .sub-menu {
+        opacity: 0;
+        visibility: hidden;
+        transition: .3s;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: lighten($brandBlue, 5%);
+        box-shadow: 0 5px 10px rgba(#000, .1);
+        border-radius: 20px;
+        overflow: hidden;
+
+        a {
+            padding: 10px 20px;
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            border-bottom: 1px solid rgba(#fff, .07);
+            white-space: nowrap;
+            transition: .3s;
+            font-size: .9rem;
+
+            &:hover {
+                background-color: lighten($brandBlue, 3%);
+            }
+        }
+
+        li.menu-item--active a {
+            font-weight: 700;
+        }
+
+        li:last-child a {
+            border-bottom: none;
+        }
+    }
+}
+
+.desktop-nav > ul > li > a:hover + .sub-menu,
+.desktop-nav .sub-menu:hover {
+    opacity: 1;
+    visibility: visible;
+}

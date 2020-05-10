@@ -1,0 +1,221 @@
+////
+///	
+/// @group  Components (Copy & Image)
+/// @author Rob Watson
+////
+
+.section--persona {
+  padding: 70px 30px;
+
+  @include lg-up {
+    padding: 100px 80px;
+    min-height: 100vh;
+    @include flexbox;
+    @include align-items(center);
+  }
+}
+
+.persona-content {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1140px;
+  border-radius: 10px;
+  text-align: center;
+
+  @include lg-up {
+    @include flex-direction(row);
+    text-align: left;
+  }
+
+  &__section-name {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    -webkit-transform: translateX(-50%) translateY(-100%);
+    transform: translateX(-50%) translateY(-100%);
+    font-size: 1.875rem;
+    line-height: .6;
+    margin: 0;
+
+    @include sm-up {
+      font-size: 2.5rem;
+    }
+
+    @include lg-up {
+      font-size: 3.75rem;
+      left: 0;
+      top: 50%;
+      transform: rotate(-90deg) translateY(-100%) translateX(-50%);
+      transform-origin: 0 0;
+    }
+  }
+
+  &__block--img {
+    width: 70%;
+    max-width: 300px;
+    margin: 0 auto;
+
+    @include lg-up {
+      width: 55%;
+      max-width: none;
+      @include flexbox;
+    }
+
+    img {
+      @include lg-up {
+        width: 80%;
+        max-width: 450px;
+        margin: auto;
+      }
+    }
+  }
+
+  &__block--copy {
+    padding: 30px;
+
+    @include sm-up {
+      padding: 30px 60px 40px;
+    }
+
+    @include lg-up {
+      width: 45%;
+      padding: 60px 60px 60px 0;
+    }
+
+    @include xl-up {
+      padding: 60px 90px 60px 0;
+    }
+
+    @include xxl-up {
+      padding: 80px 120px 80px 0;
+    }
+  }
+
+  &__title {
+    font-size: 0.875rem;
+    margin-top: 0;
+  }
+
+  &__copy {
+    p:first-of-type {
+      font-weight: 700;
+      font-size: 1.125rem;
+
+      @include xl-up {
+        font-size: 1.5rem;
+      }
+    }
+
+    p {
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+  }
+
+  .cta {
+    margin-top: 15px;
+  }
+}
+
+
+// Alt alignemnt
+.section--persona.theme--left {
+
+  .persona-content {
+
+    &__block--copy {
+      @include lg-up {
+        @include order(-1);
+        padding: 60px 0 60px 60px;
+      }
+
+      @include xl-up {
+        padding: 60px 0 60px 90px;
+      }
+  
+      @include xxl-up {
+        padding: 80px 0 80px 120px;
+      }
+    }
+
+    &__section-name {
+      @include lg-up {
+        left: auto;
+        right: 0;
+        top: auto;
+        bottom: 50%;
+        transform: rotate(90deg) translateY(0) translateX(50%);
+        transform-origin: bottom right;
+      }
+    }
+  }
+}
+
+
+// Theme specifics
+.section--persona.theme--purple {
+  background: $brandPurpleDark;
+
+  .persona-content {
+    background: $brandPurple;
+
+    &__block--img img {
+      margin-top: -10px;
+    }
+
+    &__section-name {
+      color: $brandPurple;
+    }
+
+    &__title {
+      color: $brandOrange;
+    }
+  }
+}
+
+.section--persona.theme--pink {
+  background: $brandPinkDark;
+
+  .persona-content {
+    background: $brandPink;
+
+    &__block--img img {
+      margin-top: -70px;
+
+      @include lg-up {
+        width: 90%;
+        max-width: 500px;
+        margin-top: -100px;
+      }
+    }
+
+    &__section-name {
+      color: $brandPink;
+    }
+
+    &__title {
+      color: $brandTeal;
+    }
+  }
+}
+
+.section--persona.theme--teal {
+  background: $brandTealDark;
+
+  .persona-content {
+    background: $brandTeal;
+
+    &__block--img img {
+      margin-top: -10px;
+    }
+
+    &__section-name {
+      color: $brandTeal;
+    }
+
+    &__title {
+      color: $brandPurple;
+    }
+  }
+}

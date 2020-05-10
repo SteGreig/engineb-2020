@@ -5,3 +5,12 @@ function GlobalSetCookie(cname, cvalue, exdays) {
 	var expires = "expires=" + d.toUTCString();
 	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
+
+
+
+// Hero Scroll Arrow
+$(".scroll-arrow").click(function() {
+	$("html, body").animate({
+	scrollTop: $("#section-2").offset().top
+	}, 650);
+});

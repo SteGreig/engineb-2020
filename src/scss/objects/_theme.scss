@@ -1,23 +1,36 @@
 .theme {
 	
-	&--primary { 
-		color: $Black;	
-
-		.overlay { color: $White; }
-
+	&--primary,
+	&--blue { 
+		background: $brandBlue;
+		color: #fff;
 	}
 
-	&--secondary {
-		background: $CornflowerBlue;
-		color: $White;
+	&--secondary,
+	&--orange {
+		background: $brandOrange;
+		color: #fff;
 	}
 
-	&--alternative { 
-		background: $MintCream;
-		color: $DarkSlateGrey; 
+	&--alternative,
+	&--grey { 
+		background: $brandGrey;
+		color: $brandBlue;
+	}
 
-		.overlay { color: $White; }
-		
+	&--purple {
+		background: $brandPurple;
+		color: #fff;
+	}
+
+	&--pink {
+		background: $brandPink;
+		color: #fff;
+	}
+
+	&--teal {
+		background: $brandTeal;
+		color: #fff;
 	}
 
 }
