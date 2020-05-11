@@ -1,0 +1,60 @@
+
+.modal-tray {
+  position: fixed;
+  top: 0;
+  left: 100%;
+  z-index: 1100;
+  height: 100vh;
+  width: 100%;
+  padding: 50px 30px;
+  background: $brandBlueLight;
+  color: #fff;
+  overflow-y: scroll;
+  text-align: center;
+  transition: .5s;
+
+  @include lg-up {
+    width: 50%;
+    text-align: left;
+    padding: 50px;
+  }
+
+  @include xl-up {
+    padding: 50px 80px;
+  }
+
+  @include xxl-up {
+    padding: 50px 100px;
+  }
+
+  &.active {
+    left: 0;
+
+    @include lg-up {
+      left: 50%;
+    }
+  }
+
+  h2 {
+    font-size: 2rem;
+
+    @include xl-up {
+      font-size: 2.3rem;
+    }
+  }
+
+  &__close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: .3s;
+
+
+    &:hover {
+      opacity: .8;
+    }
+  }
+}

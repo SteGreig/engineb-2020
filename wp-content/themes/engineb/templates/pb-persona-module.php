@@ -17,7 +17,7 @@
 	$sectionButtonText = get_sub_field( 'pm_button_text' );
 ?>
 
-<article class="section section--persona section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?> theme--<?php echo $sectionAlignment; ?>" id="section-<?php echo $section; ?>">
+<article class="section section--persona <?php echo strtolower(str_replace(" ", "-", $sectionName)); ?> section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?> theme--<?php echo $sectionAlignment; ?>" id="<?php the_sub_field('pm_id'); ?>">
 
   <section class="persona-content flex flex-col">
 
@@ -32,7 +32,7 @@
       <div class="persona-content__copy">
         <?php echo $sectionCopy; ?>
       </div>
-      <button class="cta cta--white-<?php echo $sectionTheme; ?> cta--lg"><?php echo $sectionButtonText; ?></button>
+      <button data-dest="how-it-works" class="cta cta--white-<?php echo $sectionTheme; ?> cta--lg"><?php echo $sectionButtonText; ?></button>
     </div>
     
   </section>

@@ -11,6 +11,6 @@ function GlobalSetCookie(cname, cvalue, exdays) {
 // Hero Scroll Arrow
 $(".scroll-arrow").click(function() {
 	$("html, body").animate({
-	scrollTop: $("#section-2").offset().top
+	scrollTop: $("#about-us").offset().top
 	}, 650);
 });

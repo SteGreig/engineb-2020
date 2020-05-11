@@ -24,8 +24,12 @@ html, body {
 	}
 
 	@include lg-up {
-		max-width: 1400px;
+		max-width: 1140px;
 		margin: 0 auto;
+	}
+
+	@include xl-up {
+		padding: 60px 0;
 	}
 	
 }
@@ -37,6 +41,12 @@ img {
 a:not(.cta) {
 	font-weight: 700;
 	color: #fff;
+}
+
+button {
+	background: none;
+	border: none;
+	-webkit-appearance: none;
 }
 
 .overlay {

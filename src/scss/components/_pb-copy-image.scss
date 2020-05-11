@@ -3,3 +3,45 @@
 /// @group  Components (Copy & Image)
 /// @author Rob Watson
 ////
+
+.section--copy-image {
+  min-height: 100vh;
+
+  .banner__header {
+    font-size: 2.5rem;
+  }
+
+  p {
+    margin: 1.5em 0;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
+  strong {
+    font-size: 1.125rem;
+  }
+
+  .block--copy {
+    @include lg-up {
+      padding-right: 80px;
+    }
+  }
+}
+
+.modal-trigger {
+  border-bottom: 1px solid $brandPurpleDark;
+  padding-bottom: 9px;
+  cursor: pointer;
+
+  &:hover {
+    color: $brandOrange;
+    border-color: $brandOrange;
+  }
+}
+
+.section--copy-image.theme--alternative {
+  background-image: url(../../assets/img/triangle-bg.svg);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}

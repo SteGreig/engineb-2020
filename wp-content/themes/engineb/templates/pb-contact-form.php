@@ -1,4 +1,4 @@
-<article class="section section--copy section--copy-form section--<?php echo $section; ?> theme--primary align--center" id="section-<?php echo $section; ?>">
+<article class="section section--copy section--copy-form section--<?php echo $section; ?> theme--primary align--center contact-section" id="contact">
 	
 	<section class="container container--600">
 

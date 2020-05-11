@@ -20,4 +20,4 @@
 	get_template_part( 'templates/global-header' );
 ?>
 
-<main class="global-main" id="aria-main">
+<main class="global-main <?php if(is_front_page()) { echo "sp"; } ?>" id="aria-main">

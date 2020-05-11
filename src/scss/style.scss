@@ -26,7 +26,7 @@
 // TOOLS
 @import 'tools/mixins';
 @import 'tools/functions';
-@import 'tools/hamburgers';
+//@import 'tools/hamburgers';
 
 // GENERIC
 @import 'generic/normalize';
@@ -39,8 +39,9 @@
 // OBJECTS
 @import 'objects/global';
 @import 'objects/theme';
-@import 'objects/hamburgers';
+//@import 'objects/hamburgers';
 @import 'objects/grid';
+@import 'objects/modal-tray';
 
 // COMPONENTS
 @import 'components/header';
@@ -48,6 +49,7 @@
 @import 'components/gdpr';
 @import 'components/ctas';
 @import 'components/pb-hero';
+@import 'components/pb-bold-intro-section';
 @import 'components/pb-persona-module';
 @import 'components/pb-banners';
 @import 'components/pb-banners-full-bleed';

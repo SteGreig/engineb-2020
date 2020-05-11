@@ -13,7 +13,7 @@
 	$sectionHeader = get_sub_field( 'hs_headline' );
 ?>
 
-<article class="section section--hero section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?>" id="section-<?php echo $section; ?>">
+<article class="section section--hero section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?>" id="hero">
 	
   <section class="section--hero__container container flex justify-center items-center">
 

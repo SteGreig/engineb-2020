@@ -20,7 +20,7 @@
 	$sectionCtaRepeater = $sectionCtas['cv_ctas_repeater'];
 ?>
 
-<article class="section section--copy section--copy-video section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?>" id="section-<?php echo $section; ?>">
+<article class="section section--copy section--copy-video section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?>" id="<?php the_sub_field('cv_id'); ?>">
 	
 	<section class="container">
 

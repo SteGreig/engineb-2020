@@ -22,11 +22,11 @@
 	$sectionCtaRepeater = $sectionCtas['ci_ctas_repeater'];
 ?>
 
-<article class="section section--copy section--copy-image section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?>" id="section-<?php echo $section; ?>">
+<article class="section section--copy section--copy-image flex items-center section--<?php echo $section; ?> theme--<?php echo $sectionTheme; ?> <?php echo strtolower(str_replace(" ", "-", $sectionHeader)); ?>" id="<?php the_sub_field('ci_id'); ?>">
 	
 <section class="container">
 
-	<div class="grid grid--2">
+	<div class="grid grid--2 items-center">
 		<?php 
 			if( $sectionAlignment === 'left' ):
 				include( 'pb-copy-image--copy.php' );
@@ -39,5 +39,7 @@
 		</div>
 		
 	</section>
+
+	<?php if(get_sub_field('ci_modal_copy')) { include( 'modal-tray.php' ); } ?>
 	
 </article>

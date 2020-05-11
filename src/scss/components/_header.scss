@@ -124,6 +124,10 @@
         display: none;
     }
 
+    > ul > .current-menu-item > a[href*="/media"] {
+        font-weight: 700;
+    }
+
     > ul > li > a {
         display: block;
         color: #fff;
@@ -131,6 +135,10 @@
         padding: 8px 6px;
         font-weight: 300;
         font-size: .85rem;
+
+        &.active {
+            font-weight: 700;
+        }
 
         @include lg-up {
             padding: 12px 14px;

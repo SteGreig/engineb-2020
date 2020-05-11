@@ -10,6 +10,10 @@
 
 				include( 'pb-hero.php' );
 
+			elseif( get_row_layout() == 'bold_intro_section' ):
+
+				include( 'pb-bold-intro-section.php' );
+
 			elseif( get_row_layout() == 'persona_module' ):
 
 				include( 'pb-persona-module.php' );

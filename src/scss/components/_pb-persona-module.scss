@@ -101,6 +101,7 @@
     p:first-of-type {
       font-weight: 700;
       font-size: 1.125rem;
+      line-height: 1.5;
 
       @include xl-up {
         font-size: 1.5rem;
