@@ -10,6 +10,10 @@
 
 				include( 'pb-hero.php' );
 
+			elseif( get_row_layout() == 'standard_text_page' ):
+
+				include( 'pb-standard-text-pg.php' );
+
 			elseif( get_row_layout() == 'bold_intro_section' ):
 
 				include( 'pb-bold-intro-section.php' );

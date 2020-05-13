@@ -1,4 +1,6 @@
 
+$('.modal-tray').show();
+
 $('.modal-trigger').click(function() {
   $(this).parents('.section').find('.modal-tray').addClass('active');
 });

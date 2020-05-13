@@ -64,11 +64,19 @@
 
     @include md-up {
       margin: 1em;
+      padding-left: 10px;
+      padding-right: 10px;
+      width: 210px;
     }
 
     @include lg-up {
-      padding: 16px 80px;
+      padding: 16px 10px;
       font-size: 1.4rem;
+      width: 270px;
+    }
+
+    @include xl-up {
+      width: 312px;
     }
   }
 }

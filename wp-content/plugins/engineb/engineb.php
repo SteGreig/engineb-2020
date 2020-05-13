@@ -40,7 +40,7 @@
 	/**
 	 * Custom Post Types	
 	 */
-	/// include( plugin_dir_path(__FILE__) . 'inc/custom-post-types/_example.php' );
+	include( plugin_dir_path(__FILE__) . 'inc/custom-post-types/media-posts.php' );
 
 
 

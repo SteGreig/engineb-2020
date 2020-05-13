@@ -1,0 +1,18 @@
+
+.section--contact {
+  background-image: url(../../assets/img/body-round-bg.svg);
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  @include lg-up {
+    padding-top: 20px;
+  }
+
+  .section__header {
+    font-size: 2.5rem;
+  }
+
+  a:hover {
+    color: $brandOrange;
+  }
+}

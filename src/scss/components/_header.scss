@@ -22,6 +22,16 @@
     &__contact-cta.cta {
         display: none;
 
+        .dark & {
+            color: $brandBlue;
+            border-color: $brandBlue;
+
+            &:hover {
+                background: $brandBlue;
+                color: #fff;
+            }
+        }
+
         @include lg-up {
             display: block;
         }
@@ -111,7 +121,8 @@
         position: relative;
 
         &:hover > a {
-            text-shadow: 0 0 1px #fff;
+            //text-shadow: 0 0 1px #fff;
+            font-weight: 700;
         }
 
         &.menu-item--active > a {
@@ -135,6 +146,14 @@
         padding: 8px 6px;
         font-weight: 300;
         font-size: .85rem;
+
+        .dark & {
+            color: $brandBlue;
+
+            &:hover {
+                text-shadow: none;
+            }
+        }
 
         &.active {
             font-weight: 700;

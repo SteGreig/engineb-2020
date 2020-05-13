@@ -1,5 +1,5 @@
 
-<article class="section section--intro section--<?php echo $section; ?> flex flex-col align--center" id="<?php the_sub_field('bis_id'); ?>">
+<article class="section theme--white section--intro section--<?php echo $section; ?> flex flex-col align--center" id="<?php the_sub_field('bis_id'); ?>">
 
   <div class="w100 theme--grey section--intro__copy flex items-center justify-center">
     <section class="container--intro-copy">

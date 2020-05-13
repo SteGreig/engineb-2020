@@ -1,0 +1,66 @@
+// --------------------------------------------------------------------------------------------------
+// Standard Text Page (e.g. Privacy Policy)
+// --------------------------------------------------------------------------------------------------
+
+.section--standard-pg {
+  padding-top: 30px;
+  background-image: url(../../assets/img/body-round-bg.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+
+  @include md-up {
+    padding-top: 50px;
+  }
+
+  @include lg-up {
+    padding-top: 90px;
+  }
+}
+
+.container--standard-pg {
+  max-width: 800px;
+}
+
+.standard-pg__header {
+  text-align: center;
+  font-size: 2.5rem;
+
+  @include md-up {
+    font-size: 3rem;
+  }
+
+  @include lg-up {
+    font-size: 4rem;
+  }
+
+  @include xl-up {
+    font-size: 5rem;
+  }
+}
+
+.standard-pg__copy {
+  line-height: 1.5;
+  font-size: 1rem;
+
+  ol, ul {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+  }
+
+  ol ol {
+    margin-left: 25px;
+  }
+
+  ol ol li {
+    list-style: lower-alpha;
+  }
+
+  li {
+    padding: 3px 0;
+  }
+
+  td {
+    border: 1px solid rgba(#fff, .4);
+    padding: 10px;
+  }
+}

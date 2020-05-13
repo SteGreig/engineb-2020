@@ -1,11 +1,11 @@
 <?php
 
-	function br_cpt_example() {
-		$plural = 'Examples';
-		$single = 'Example';
-		$slug = 'example';
+	function br_media_posts() {
+		$plural = 'Media Posts';
+		$single = 'Media Post';
+		$slug = 'media';
 		// @link https://developer.wordpress.org/resource/dashicons/
-		$dashicon = 'dashicons-awards';
+		$dashicon = 'dashicons-admin-links';
 		$menu_position = 5;
     $labels = array(
 			'name' => $plural,
@@ -28,7 +28,7 @@
 			'label' => $plural,
 			'description' =>  $plural,
 			'labels' => $labels,
-			'supports' => array( 'title', 'author', 'thumbnail', 'excerpt' ),
+			'supports' => array( 'title', 'editor', 'thumbnail' ),
 			'hierarchical' => false,
 			'public' => true,
 			'show_ui' => true,
@@ -38,7 +38,7 @@
 			'menu_position' => $menu_position,
 			'menu_icon' => $dashicon,
 			'show_in_admin_bar' => true,
-			'show_in_nav_menus' => false,
+			'show_in_nav_menus' => true,
 			'can_export' => true,
 			'has_archive' => true,
 			'exclude_from_search' => false,
@@ -47,4 +47,4 @@
 		);
     register_post_type( $slug , $args );
 	}
-	add_action( 'init', 'br_cpt_example', 0 );
+	add_action( 'init', 'br_media_posts', 0 );

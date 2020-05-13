@@ -13,7 +13,8 @@
  */	
   $sectionName = get_sub_field( 'pm_section_name' );
 	$sectionHeader = get_sub_field( 'pm_title' );
-	$sectionCopy = get_sub_field( 'pm_copy' );
+  $sectionCopy = get_sub_field( 'pm_copy' );
+  $sectionCopyExtra = get_sub_field( 'pm_additional_copy' );
 	$sectionButtonText = get_sub_field( 'pm_button_text' );
 ?>
 
@@ -31,6 +32,8 @@
       <h3 class="persona-content__title"><?php echo $sectionHeader; ?></h3>
       <div class="persona-content__copy">
         <?php echo $sectionCopy; ?>
+        <p class="persona-content__more">Read more</p>
+        <div class="persona-content__additional"><?php echo $sectionCopyExtra; ?></div>
       </div>
       <button data-dest="how-it-works" class="cta cta--white-<?php echo $sectionTheme; ?> cta--lg"><?php echo $sectionButtonText; ?></button>
     </div>

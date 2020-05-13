@@ -1,0 +1,136 @@
+form {
+  width: 100%;
+  margin: 0 auto 30px;
+  max-width: 700px;
+
+  .gfield {
+      position: relative;
+      float: left;
+      width: 100%;
+      margin-bottom: 20px;
+
+      @include md-up {
+        width: 46%;
+        margin: 2%;
+
+        &:last-of-type {
+          width: 96%;
+        }
+      }
+  }
+  
+  .validation_error {
+      display: none;
+  }
+
+  .validation_message {
+      padding: 4px 8px;
+      background-color: $brandTeal;
+      display: inline-block;
+      border-radius: 20px;
+      font-size: .8rem;
+      position: absolute;
+      top: -8px;
+      right: 15px;
+      font-weight: 700;
+  }
+
+  label {
+      display: none;
+  }
+
+  input:not([type="submit"]),
+  select,
+  textarea {
+      border-radius: 10px;
+      border: none;
+      padding: 15px 22px;
+      display: block;
+      width: 100%;
+      font-size: 1rem;
+      border: 2px solid #fff;
+      background: none;
+      color: #fff;
+
+      &:focus,
+      &:active {
+          outline: none;
+          background-color: darken($brandBlue, 3%);
+      }
+  }
+
+  select {
+    -webkit-appearance: none;
+    background: url(../../assets/img/dropdown-arrow.svg) 95% 50% no-repeat;
+  }
+
+  textarea {
+      height: 200px;
+      border: 2px solid #fff;
+      background: none;
+  }
+
+  // The below placeholder selectors don't work when comma separated
+input::-webkit-input-placeholder {
+  color: #fff;
+}
+input::-ms-input-placeholder {
+  color: #fff;
+}
+input::-moz-placeholder {
+  color: #fff;
+}
+input::placeholder {
+  color: #fff;
+}
+
+textarea::-webkit-input-placeholder {
+  color: #fff;
+}
+textarea::-ms-input-placeholder {
+  color: #fff;
+}
+textarea::-moz-placeholder {
+  color: #fff;
+}
+textarea::placeholder {
+  color: #fff;
+}
+
+
+  input[type="submit"],
+  button {
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
+      background: #fff;
+      color: $brandBlue;
+      border-radius: 10px;
+      transition: .3s;
+      border: none;
+      @include font-size(15, 15);
+      padding: 17px 90px;
+      min-width: 180px;
+      transition: .3s;
+      font-weight: 700;
+      margin-top: 20px;
+      cursor: pointer;
+
+      &:hover {
+          transform: scale(1.1);
+      }
+
+      &:focus,
+      &:active {
+          outline: none;
+          background-color: #eee;
+      }
+  }
+}
+
+.gform_confirmation_message {
+  background-color: #3dbd9b;
+  padding: 10px 15px;
+  border-radius: 20px;
+  display: inline-block;
+}

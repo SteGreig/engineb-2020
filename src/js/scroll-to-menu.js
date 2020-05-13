@@ -14,12 +14,17 @@ $('.sp a[href*="/#"]').click(function() {
         scrollTop: $('#'+link).offset().top
     }, 650);
 
+    $('.mob-nav').removeClass('active');
+    $('body').removeClass('fixed');
+    $('.mob-nav-toggle img:first-child').show();
+    $('.mob-nav-toggle img:last-child').hide();
+    $('.site-logo__img--main').toggleClass('hide');
+
 });
 
 
+// Add active state to sections when they are more than half visible
 var sections = $('.section').length;
-
-console.log(sections);
 
 for (var i=1; i<=sections; i++) {
     (function(i){

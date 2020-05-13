@@ -98,7 +98,7 @@
   }
 
   &__copy {
-    p:first-of-type {
+    > p:first-of-type {
       font-weight: 700;
       font-size: 1.125rem;
       line-height: 1.5;
@@ -112,6 +112,19 @@
       font-size: 0.875rem;
       line-height: 1.6;
     }
+  }
+
+  &__more {
+    font-weight: 700;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__additional {
+    display: none;
   }
 
   .cta {

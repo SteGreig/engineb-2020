@@ -2,6 +2,8 @@
 // Mobile Navigation
 // @author Stephen Greig
 // --------------------------------------------------------------------------------------------------
+
+$('.mob-nav').show();
         
 // Copy primary and secondary menus to .mob-nav element
 var mobNav = document.querySelector('.mob-nav .scroll-container');

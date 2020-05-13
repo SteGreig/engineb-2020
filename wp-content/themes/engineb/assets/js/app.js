@@ -7,12 +7,119 @@ function GlobalSetCookie(cname, cvalue, exdays) {
 }
 
 
+// Cookie notice
+if (localStorage.getItem("cookies") === null) {
+  $('.cookie-notice').show();
+} else {
+	$('.cookie-notice').hide();
+}
+$('.cookie-notice-accept').click(function() {
+	$('.cookie-notice').hide();
+	localStorage.setItem('cookies', 'accepted');
+});
+
 
 // Hero Scroll Arrow
 $(".scroll-arrow").click(function() {
 	$("html, body").animate({
 	scrollTop: $("#about-us").offset().top
 	}, 650);
+});
+
+
+// Persona Module Read More
+$('.persona-content__more').click(function() {
+	$(this).next().show();
+	$(this).hide();
+});
+
+
+// Amend logo colour on purple/pink/teal sections
+function logoColour() {
+	if($('.section.theme--grey').length > 0) {
+		var top_of_element = $('.section.theme--grey').offset().top;
+		var bottom_of_element = $('.section.theme--grey').offset().top + $('.section.theme--grey').outerHeight();
+	} else {
+		var top_of_element = 0;
+		var bottom_of_element = 0;
+	}
+	if($('.section.theme--alternative').length > 0) {
+		var top_of_element2 = $('.section.theme--alternative').offset().top;
+		var bottom_of_element2 = $('.section.theme--alternative').offset().top + $('.section.theme--alternative').outerHeight();
+	} else {
+		var top_of_element2 = 0;
+		var bottom_of_element2 = 0;
+	}
+	if($('.section.theme--white').length > 0) {
+		var top_of_element3 = $('.section.theme--white').offset().top;
+		var bottom_of_element3 = $('.section.theme--white').offset().top + $('.section.theme--white').outerHeight();
+	} else {
+		var top_of_element3 = 0;
+		var bottom_of_element3 = 0;
+	}
+	if($('.section.theme--blue').length > 0) {
+		var top_of_element4 = $('.section.theme--blue').offset().top;
+		var bottom_of_element4 = $('.section.theme--blue').offset().top + $('.section.theme--blue').outerHeight();
+	} else {
+		var top_of_element4 = 0;
+		var bottom_of_element4 = 0;
+	}
+
+	var top_of_screen = $(window).scrollTop() + 10;
+
+	if ((top_of_screen >= top_of_element) && (top_of_screen <= bottom_of_element) || (top_of_screen >= top_of_element2) && (top_of_screen <= bottom_of_element2) || (top_of_screen >= top_of_element3) && (top_of_screen <= bottom_of_element3) || (top_of_screen >= top_of_element4) && (top_of_screen <= bottom_of_element4)){
+		$('.site-logo__img--main').css('opacity','1');
+	} else {
+		$('.site-logo__img--main').css('opacity','0');
+	}
+}
+
+$(window).scroll(function() {
+	logoColour();
+});
+$('.section').hover(function() {
+	logoColour();
+});
+
+// Amend nav colours on white/grey sections
+function navColour() {
+	if($('.section.theme--grey').length > 0) {
+		var top_of_element = $('.section.theme--grey').offset().top;
+		var bottom_of_element = $('.section.theme--grey').offset().top + $('.section.theme--grey').outerHeight();
+	} else {
+		var top_of_element = 0;
+		var bottom_of_element = 0;
+	}
+	if($('.section.theme--alternative').length > 0) {
+		var top_of_element2 = $('.section.theme--alternative').offset().top;
+		var bottom_of_element2 = $('.section.theme--alternative').offset().top + $('.section.theme--alternative').outerHeight();
+	} else {
+		var top_of_element2 = 0;
+		var bottom_of_element2 = 0;
+	}
+	if($('.section.theme--white').length > 0) {
+		var top_of_element3 = $('.section.theme--white').offset().top;
+		var bottom_of_element3 = $('.section.theme--white').offset().top + $('.section.theme--white').outerHeight();
+	} else {
+		var top_of_element3 = 0;
+		var bottom_of_element3 = 0;
+	}
+
+	//var top_of_screen = $(window).scrollTop();
+	var top_of_screen = $(window).scrollTop() + 10;
+
+	if (top_of_screen !== 0 && (top_of_screen >= top_of_element) && (top_of_screen <= bottom_of_element) || (top_of_screen >= top_of_element2) && (top_of_screen <= bottom_of_element2) || (top_of_screen >= top_of_element3) && (top_of_screen <= bottom_of_element3)){
+		$('.header').addClass('dark');
+	} else {
+		$('.header').removeClass('dark');
+	}
+}
+
+$(window).scroll(function() {
+	navColour();
+});
+$('.section').hover(function() {
+	navColour();
 });
 //https://css-tricks.com/snippets/jquery/simple-jquery-accordion/
 (function ($) {
@@ -245,6 +352,8 @@ $(document).ready(function () {
 // Mobile Navigation
 // @author Stephen Greig
 // --------------------------------------------------------------------------------------------------
+
+$('.mob-nav').show();
         
 // Copy primary and secondary menus to .mob-nav element
 var mobNav = document.querySelector('.mob-nav .scroll-container');
@@ -261,6 +370,8 @@ $('.mob-nav-toggle').click(function() {
     $(this).find('img').toggle();
     $('.site-logo__img--main').toggleClass('hide');
 });
+
+$('.modal-tray').show();
 
 $('.modal-trigger').click(function() {
   $(this).parents('.section').find('.modal-tray').addClass('active');
@@ -295,12 +406,17 @@ $('.sp a[href*="/#"]').click(function() {
         scrollTop: $('#'+link).offset().top
     }, 650);
 
+    $('.mob-nav').removeClass('active');
+    $('body').removeClass('fixed');
+    $('.mob-nav-toggle img:first-child').show();
+    $('.mob-nav-toggle img:last-child').hide();
+    $('.site-logo__img--main').toggleClass('hide');
+
 });
 
 
+// Add active state to sections when they are more than half visible
 var sections = $('.section').length;
-
-console.log(sections);
 
 for (var i=1; i<=sections; i++) {
     (function(i){

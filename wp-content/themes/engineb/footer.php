@@ -1,5 +1,14 @@
 
 	</main>
+
+	<div class="cookie-notice">
+		<h4 class="cookie-notice__title">Cookies &amp; Privacy</h4>
+		<p class="cookie-notice__text">This website uses cookies to ensure you get the best experience on our website.</p>
+		<div class="cookie-notice__links flex space-between">
+			<a href="<?php echo get_site_url(); ?>/privacy-policy">More information</a>
+			<button class="cta cta--orange-white cta--sm cookie-notice-accept">Accept</button>
+		</div>
+	</div>
 	
 
 	<?php get_template_part( 'templates/global-footer' ); ?>
