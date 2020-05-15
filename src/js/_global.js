@@ -30,6 +30,13 @@ $(".scroll-arrow").click(function() {
 // Persona Module Read More
 $('.persona-content__more').click(function() {
 	$(this).next().show();
+	$(this).next().next().show();
+	$(this).hide();
+});
+
+$('.persona-content__less').click(function() {
+	$(this).prev().hide();
+	$(this).prev().prev().show();
 	$(this).hide();
 });
 

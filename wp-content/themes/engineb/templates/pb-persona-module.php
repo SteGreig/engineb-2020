@@ -34,6 +34,7 @@
         <?php echo $sectionCopy; ?>
         <p class="persona-content__more">Read more</p>
         <div class="persona-content__additional"><?php echo $sectionCopyExtra; ?></div>
+        <p class="persona-content__less">Read less</p>
       </div>
       <button data-dest="how-it-works" class="cta cta--white-<?php echo $sectionTheme; ?> cta--lg"><?php echo $sectionButtonText; ?></button>
     </div>

@@ -4,6 +4,10 @@
   <div class="w100 theme--grey section--intro__copy flex items-center justify-center">
     <section class="container--intro-copy">
 
+      <div class="standard-copy">
+        <?php the_sub_field('bis_standard_copy'); ?>
+      </div>
+
       <?php the_sub_field('bis_bold_intro_copy'); ?>
       
     </section>
