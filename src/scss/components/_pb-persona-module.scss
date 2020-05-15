@@ -93,7 +93,7 @@
   }
 
   &__title {
-    font-size: 0.875rem;
+    font-size: 1.2rem;
     margin-top: 0;
   }
 
@@ -102,10 +102,6 @@
       font-weight: 700;
       font-size: 1.125rem;
       line-height: 1.5;
-
-      @include xl-up {
-        font-size: 1.5rem;
-      }
     }
 
     p {

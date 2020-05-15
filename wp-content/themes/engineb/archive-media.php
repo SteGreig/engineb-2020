@@ -35,6 +35,11 @@
       </div>
 
     <?php endif; wp_reset_postdata(); ?>
+
+      <div class="align--center">
+        <p><a href="">Download our press pack</a></p>
+      </div>
+
   </section>
 </article>
 
