@@ -87,9 +87,6 @@ define( 'EMPTY_TRASH_DAYS', 10 );
 define( 'AUTOSAVE_INTERVAL', 160 );
 /** PROD ONLY SETTINGS */
 define( 'FORCE_SSL_ADMIN', true );
-define( 'DISALLOW_FILE_EDIT', true );
-define( 'DISALLOW_FILE_MODS', true );
-define( 'AUTOMATIC_UPDATER_DISABLED', true );
 define( 'WP_AUTO_UPDATE_CORE', false );
 define( 'WP_DEBUG', false );
 define( 'WP_DEBUG_LOG', false );

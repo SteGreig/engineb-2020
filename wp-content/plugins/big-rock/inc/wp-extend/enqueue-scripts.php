@@ -20,11 +20,20 @@
  * Load JS
  *
  */
+// include custom jQuery
+function include_custom_jquery() {
+
+	wp_deregister_script('jquery');
+	wp_enqueue_script('jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js', array(), null, true);
+
+}
+add_action('wp_enqueue_scripts', 'include_custom_jquery');
+
 	function bigrock_enqueue_scripts() {
-		wp_register_script( 'br-scripts-libs', get_template_directory_uri() . '/assets/js/libs/app-libs-min.js','','',true);
+		wp_register_script( 'br-scripts-libs', get_template_directory_uri() . '/assets/js/libs/app-libs-min.js','jquery','',true);
 		wp_enqueue_script( 'br-scripts-libs' );
 
-		wp_register_script( 'br-scripts-app', get_template_directory_uri() . '/assets/js/app-min.js','','',true);
+		wp_register_script( 'br-scripts-app', get_template_directory_uri() . '/assets/js/app-min.js','jquery','',true);
 		wp_enqueue_script( 'br-scripts-app' );
 	}
 	add_action( 'wp_enqueue_scripts', 'bigrock_enqueue_scripts' );
